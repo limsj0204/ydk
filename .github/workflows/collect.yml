@@ -19,7 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      # 어느 브랜치에서 실행되든 데이터는 항상 main에 쌓는다.
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
@@ -41,7 +44,7 @@ jobs:
           fi
           git commit -m "data: $(date -u +%Y-%m-%dT%H:%MZ) 스냅샷"
           for i in 1 2 3; do
-            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
             sleep $((i * 5))
           done
           exit 1
