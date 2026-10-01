@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>양도끼 조회수 추이</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.10);
+  --hover: rgba(11,11,11,0.04);
+  --accent: #2a78d6;
+  --up: #006300;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --axis: #383835;
+    --border: rgba(255,255,255,0.10); --hover: rgba(255,255,255,0.05);
+    --accent: #3987e5; --up: #0ca30c;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+  --muted: #898781; --grid: #2c2c2a; --axis: #383835;
+  --border: rgba(255,255,255,0.10); --hover: rgba(255,255,255,0.05);
+  --accent: #3987e5; --up: #0ca30c;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+header img { width: 44px; height: 44px; border-radius: 50%; background: var(--grid); }
+h1 { font-size: 20px; margin: 0; }
+.sub { color: var(--ink-2); font-size: 13px; }
+.muted { color: var(--muted); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.tile, .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.tile { padding: 14px 16px; }
+.tile .label { color: var(--ink-2); font-size: 12px; }
+.tile .value { font-size: 24px; font-weight: 600; margin-top: 2px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button {
+  border: 0; background: transparent; color: var(--ink-2); padding: 6px 12px; font: inherit; cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button:hover { background: var(--hover); }
+.seg button[aria-pressed="true"] { color: var(--ink); font-weight: 600; background: var(--hover); }
+input[type="search"] {
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; min-width: 0; flex: 1 1 200px; max-width: 320px;
+}
+.card { padding: 16px; margin-bottom: 20px; }
+.card-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.card h2 { font-size: 15px; margin: 0; }
+.card h2 a { color: inherit; }
+.chart-box { position: relative; height: 320px; }
+.chart-box.short { height: 220px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 8px; padding: 0; list-style: none; font-size: 12px; color: var(--ink-2); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; max-width: 280px; }
+.legend li span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.key { width: 14px; height: 2px; border-radius: 1px; flex: none; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--grid); text-align: left; white-space: nowrap; }
+th { color: var(--ink-2); font-weight: 500; font-size: 12px; position: sticky; top: 0; background: var(--surface); }
+th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+th[data-sort] { cursor: pointer; user-select: none; }
+th[data-sort]:hover { color: var(--ink); }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--hover); }
+tbody tr.selected { background: var(--hover); box-shadow: inset 3px 0 0 var(--accent); }
+.vid { display: flex; align-items: center; gap: 10px; min-width: 280px; max-width: 460px; white-space: normal; }
+.vid img { width: 64px; height: 36px; object-fit: cover; border-radius: 4px; flex: none; background: var(--grid); }
+.vid .t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.badge { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--border); color: var(--ink-2); margin-left: 4px; vertical-align: 1px; }
+.badge.hot { border-color: var(--accent); color: var(--accent); }
+.up { color: var(--up); }
+.cmp-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1.5px solid var(--axis); }
+button.link { border: 0; background: none; color: var(--accent); cursor: pointer; font: inherit; padding: 0; }
+.empty { padding: 40px 16px; text-align: center; color: var(--ink-2); }
+details summary { cursor: pointer; color: var(--ink-2); font-size: 13px; margin-top: 12px; }
+.detail-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--ink-2); font-size: 13px; margin-bottom: 12px; }
+.detail-meta b { color: var(--ink); font-weight: 600; }
+.grid2 { display: grid; gap: 16px; }
+.chart-title { font-size: 12px; color: var(--ink-2); margin: 0 0 6px; }
+footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img id="ch-thumb" alt="" hidden>
+    <div>
+      <h1 id="ch-title">조회수 추이</h1>
+      <div class="sub" id="ch-sub">불러오는 중…</div>
+    </div>
+  </header>
+
+  <div id="app" hidden>
+    <section class="tiles" id="tiles"></section>
+
+    <div class="filters">
+      <div class="seg" id="type-filter" role="group" aria-label="영상 유형">
+        <button data-v="all" aria-pressed="true">전체</button>
+        <button data-v="video" aria-pressed="false">일반 영상</button>
+        <button data-v="short" aria-pressed="false">쇼츠</button>
+      </div>
+      <input type="search" id="q" placeholder="제목 검색" aria-label="제목 검색">
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>업로드 후 경과 시간별 조회수 비교</h2>
+        <div class="seg" id="cmp-range" role="group" aria-label="비교 구간">
+          <button data-v="48" aria-pressed="false">48시간</button>
+          <button data-v="168" aria-pressed="true">7일</button>
+          <button data-v="720" aria-pressed="false">30일</button>
+        </div>
+      </div>
+      <ul class="legend" id="cmp-legend"></ul>
+      <div class="chart-box"><canvas id="cmp-chart" aria-label="영상별 업로드 후 조회수 비교 차트"></canvas></div>
+      <p class="muted" style="font-size:12px;margin:8px 0 0">아래 표의 ● 표시를 눌러 비교할 영상을 바꿀 수 있습니다 (최대 8개). 수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</p>
+    </section>
+
+    <section class="card" id="detail" hidden>
+      <div class="card-head">
+        <h2 id="d-title"></h2>
+        <div class="seg" id="d-axis" role="group" aria-label="가로축">
+          <button data-v="time" aria-pressed="true">날짜</button>
+          <button data-v="age" aria-pressed="false">업로드 후 경과</button>
+        </div>
+      </div>
+      <div class="detail-meta" id="d-meta"></div>
+      <div class="grid2">
+        <div>
+          <p class="chart-title">누적 조회수</p>
+          <div class="chart-box"><canvas id="d-views" aria-label="누적 조회수 차트"></canvas></div>
+        </div>
+        <div>
+          <p class="chart-title">시간당 조회수 증가 (수집 구간 평균)</p>
+          <div class="chart-box short"><canvas id="d-rate" aria-label="시간당 조회수 증가 차트"></canvas></div>
+        </div>
+      </div>
+      <details>
+        <summary>수집 기록 표로 보기</summary>
+        <div class="table-wrap" style="max-height:360px;margin-top:8px">
+          <table>
+            <thead><tr><th>수집 시각 (KST)</th><th class="num">업로드 후</th><th class="num">조회수</th><th class="num">증가</th><th class="num">좋아요</th><th class="num">댓글</th></tr></thead>
+            <tbody id="d-rows"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>영상 목록 <span class="muted" id="count" style="font-weight:400"></span></h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th title="비교 차트에 표시">비교</th>
+              <th>영상</th>
+              <th data-sort="published_at">업로드</th>
+              <th class="num" data-sort="views">조회수</th>
+              <th class="num" data-sort="gain_24h">최근 24시간</th>
+              <th class="num" data-sort="views_24h_after">업로드 24시간 후</th>
+              <th class="num" data-sort="views_7d_after">업로드 7일 후</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="empty" id="empty" hidden>아직 수집된 데이터가 없습니다. 첫 수집이 끝나면 여기에 표시됩니다.</div>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+"use strict";
+const MAX_CMP = 8;
+const KST = "Asia/Seoul";
+const fmtInt = new Intl.NumberFormat("ko-KR");
+const fmtCompact = new Intl.NumberFormat("ko-KR", { notation: "compact", maximumFractionDigits: 1 });
+const fmtDate = new Intl.DateTimeFormat("ko-KR", { timeZone: KST, year: "numeric", month: "2-digit", day: "2-digit" });
+const fmtDateTime = new Intl.DateTimeFormat("ko-KR", { timeZone: KST, month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
+const fmtTick = new Intl.DateTimeFormat("ko-KR", { timeZone: KST, month: "numeric", day: "numeric", hour: "2-digit", hour12: false });
+
+const state = {
+  channel: null, videos: [], byId: new Map(),
+  type: "all", q: "", sort: "published_at", desc: true,
+  cmp: new Map(),          // videoId -> 색상 슬롯(1~8). 선택이 바뀌어도 기존 영상 색은 유지한다.
+  range: 168, selected: null, axis: "time",
+};
+const series = new Map();  // videoId -> Promise<[{t, views, likes, comments}]>
+const charts = {};
+
+const $ = (id) => document.getElementById(id);
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const n = (v) => (v == null ? "–" : fmtInt.format(v));
+const ageHours = (v, t) => (t - Date.parse(v.published_at)) / 3600e3;
+function fmtAge(h) {
+  if (h < 48) return `${Math.round(h)}시간`;
+  return `${Math.floor(h / 24)}일 ${Math.round(h % 24)}시간`;
+}
+function el(tag, props = {}, ...children) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "class") e.className = v;
+    else if (k === "text") e.textContent = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v);
+  }
+  for (const c of children) if (c != null) e.append(c);
+  return e;
+}
+
+// ---------------------------------------------------------------- 데이터
+async function loadJSON(path) {
+  const r = await fetch(path, { cache: "no-cache" });
+  if (!r.ok) throw new Error(path + " " + r.status);
+  return r.json();
+}
+function loadSeries(id) {
+  if (!series.has(id)) {
+    series.set(id, fetch(`data/snapshots/${id}.csv`, { cache: "no-cache" })
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((text) => text.trim().split("\n").slice(1).filter(Boolean).map((line) => {
+        const [t, views, likes, comments] = line.split(",");
+        return { t: Date.parse(t), views: +views, likes: likes === "" ? null : +likes, comments: comments === "" ? null : +comments };
+      })));
+  }
+  return series.get(id);
+}
+function filtered() {
+  const q = state.q.trim().toLowerCase();
+  return state.videos.filter((v) =>
+    (state.type === "all" || (state.type === "short") === !!v.is_short) &&
+    (!q || v.title.toLowerCase().includes(q)));
+}
+
+// ---------------------------------------------------------------- 상단
+function renderHeader() {
+  const c = state.channel;
+  document.title = `${c.title} 조회수 추이`;
+  $("ch-title").textContent = `${c.title} 조회수 추이`;
+  if (c.thumbnail) { $("ch-thumb").src = c.thumbnail; $("ch-thumb").hidden = false; }
+  $("ch-sub").textContent = `마지막 수집 ${fmtDateTime.format(Date.parse(c.last_run_at))} (KST)`;
+  const s = c.settings || {};
+  $("footer").textContent =
+    `수집 주기: 업로드 후 ${s.early_days}일까지 ${s.early_interval_hours}시간마다, 이후 ${s.late_interval_hours}시간마다. ` +
+    `YouTube 공개 조회수는 실시간이 아니라 조금 늦게 반영될 수 있습니다.`;
+}
+function renderTiles() {
+  const now = Date.parse(state.channel.last_run_at);
+  const active = state.videos.filter((v) => v.status !== "unavailable");
+  const gain = active.reduce((a, v) => a + (v.gain_24h || 0), 0);
+  const recent = active.filter((v) => ageHours(v, now) < 24 * 7).length;
+  const tiles = [
+    ["구독자", state.channel.subscribers == null ? "–" : fmtCompact.format(state.channel.subscribers)],
+    ["추적 중인 영상", fmtInt.format(active.length)],
+    ["최근 24시간 조회수 증가", "+" + fmtInt.format(gain)],
+    ["최근 7일 업로드", fmtInt.format(recent)],
+  ];
+  $("tiles").replaceChildren(...tiles.map(([l, v]) =>
+    el("div", { class: "tile" }, el("div", { class: "label", text: l }), el("div", { class: "value", text: v }))));
+}
+
+// ---------------------------------------------------------------- 표
+function sortVal(v, key) {
+  if (key === "views") return v.latest ? v.latest.views : null;
+  if (key === "published_at") return Date.parse(v.published_at);
+  return v[key];
+}
+function renderTable() {
+  const list = filtered().slice().sort((a, b) => {
+    const x = sortVal(a, state.sort), y = sortVal(b, state.sort);
+    if (x == null && y == null) return 0;
+    if (x == null) return 1;
+    if (y == null) return -1;
+    return state.desc ? y - x : x - y;
+  });
+  $("count").textContent = `${fmtInt.format(list.length)}개`;
+  const now = Date.parse(state.channel.last_run_at);
+  const earlyH = (state.channel.settings?.early_days || 7) * 24;
+  $("rows").replaceChildren(...list.map((v) => {
+    const slot = state.cmp.get(v.id);
+    const dot = el("span", { class: "cmp-dot" });
+    if (slot) { dot.style.background = css(`--s${slot}`); dot.style.borderColor = css(`--s${slot}`); }
+    const cmpBtn = el("button", {
+      class: "link", "aria-label": slot ? "비교에서 빼기" : "비교에 추가", title: slot ? "비교에서 빼기" : "비교에 추가",
+      onclick: (e) => { e.stopPropagation(); toggleCmp(v.id); },
+    }, dot);
+    const title = el("span", { class: "t" }, document.createTextNode(v.title));
+    if (v.is_short) title.append(el("span", { class: "badge", text: "쇼츠" }));
+    if (v.is_live) title.append(el("span", { class: "badge", text: "라이브" }));
+    if (v.status === "unavailable") title.append(el("span", { class: "badge", text: "비공개/삭제" }));
+    else if (v.status === "upcoming") title.append(el("span", { class: "badge", text: "예정" }));
+    else if (ageHours(v, now) < earlyH) title.append(el("span", { class: "badge hot", text: "집중 수집" }));
+    const thumb = el("img", { alt: "", loading: "lazy" });
+    if (v.thumbnail) thumb.src = v.thumbnail;
+    const gain = el("td", { class: "num" + (v.gain_24h > 0 ? " up" : ""), text: v.gain_24h == null ? "–" : "+" + fmtInt.format(v.gain_24h) });
+    const tr = el("tr", { class: v.id === state.selected ? "selected" : "", tabindex: "0", onclick: () => select(v.id),
+      onkeydown: (e) => { if (e.key === "Enter") select(v.id); } },
+      el("td", {}, cmpBtn),
+      el("td", {}, el("div", { class: "vid" }, thumb, title)),
+      el("td", { text: fmtDate.format(Date.parse(v.published_at)) }),
+      el("td", { class: "num", text: n(v.latest?.views) }),
+      gain,
+      el("td", { class: "num", text: n(v.views_24h_after) }),
+      el("td", { class: "num", text: n(v.views_7d_after) }),
+    );
+    return tr;
+  }));
+  document.querySelectorAll("th[data-sort]").forEach((th) => {
+    const base = th.textContent.replace(/ [▲▼]$/, "");
+    th.textContent = th.dataset.sort === state.sort ? `${base} ${state.desc ? "▼" : "▲"}` : base;
+  });
+}
+
+// ---------------------------------------------------------------- 차트 공통
+function baseOptions({ xTitle, xTick, yTick = (v) => fmtCompact.format(v) }) {
+  const grid = css("--grid"), muted = css("--muted"), axis = css("--axis");
+  return {
+    responsive: true, maintainAspectRatio: false, animation: false, normalized: true,
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: css("--surface"), borderColor: css("--border"), borderWidth: 1,
+        titleColor: css("--ink-2"), bodyColor: css("--ink"), padding: 10, boxWidth: 14, boxHeight: 2,
+        usePointStyle: false, itemSort: (a, b) => (b.parsed.y ?? -1) - (a.parsed.y ?? -1),
+        filter: (item) => item.parsed.y != null,
+      },
+    },
+    scales: {
+      x: {
+        type: "linear", grid: { display: false }, border: { color: axis },
+        ticks: { color: muted, maxRotation: 0, autoSkipPadding: 16, callback: xTick },
+        title: xTitle ? { display: true, text: xTitle, color: muted, font: { size: 11 } } : undefined,
+      },
+      y: {
+        beginAtZero: true, grid: { color: grid }, border: { display: false },
+        ticks: { color: muted, callback: yTick, maxTicksLimit: 6 },
+      },
+    },
+  };
+}
+const crosshair = {
+  id: "crosshair",
+  afterDatasetsDraw(chart) {
+    const a = chart.tooltip?.getActiveElements?.();
+    if (!a || !a.length) return;
+    const x = a[0].element.x, { top, bottom } = chart.chartArea, ctx = chart.ctx;
+    ctx.save(); ctx.strokeStyle = css("--axis"); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke(); ctx.restore();
+  },
+};
+function draw(id, config) {
+  charts[id]?.destroy();
+  charts[id] = new Chart($(id), { ...config, plugins: [crosshair] });
+}
+const ageTick = (h) => (h < 48 || h % 24 ? `${h}h` : `${h / 24}일`);
+
+// ---------------------------------------------------------------- 비교 차트
+function interp(points, x) {
+  if (!points.length || x < points[0].x || x > points[points.length - 1].x) return null;
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1], b = points[i];
+    if (x <= b.x) return b.x === a.x ? b.y : Math.round(a.y + (b.y - a.y) * (x - a.x) / (b.x - a.x));
+  }
+  return null;
+}
+function grid(range) {
+  const xs = [];
+  for (let h = 0; h <= Math.min(range, 168); h++) xs.push(h);
+  for (let h = 180; h <= range; h += 12) xs.push(h);
+  return xs;
+}
+function defaultCmp() {
+  state.cmp.clear();
+  filtered().filter((v) => v.status !== "unavailable" && v.latest).slice(0, 5)
+    .forEach((v, i) => state.cmp.set(v.id, i + 1));
+}
+function toggleCmp(id) {
+  if (state.cmp.has(id)) state.cmp.delete(id);
+  else {
+    if (state.cmp.size >= MAX_CMP) { alert(`비교는 최대 ${MAX_CMP}개까지 가능합니다.`); return; }
+    const used = new Set(state.cmp.values());
+    let slot = 1; while (used.has(slot)) slot++;
+    state.cmp.set(id, slot);
+  }
+  renderTable(); renderCompare();
+}
+async function renderCompare() {
+  const entries = [...state.cmp.entries()].map(([id, slot]) => ({ v: state.byId.get(id), slot })).filter((e) => e.v);
+  entries.sort((a, b) => a.slot - b.slot);
+  const xs = grid(state.range);
+  const datasets = await Promise.all(entries.map(async ({ v, slot }) => {
+    const pts = (await loadSeries(v.id)).map((p) => ({ x: ageHours(v, p.t), y: p.views }));
+    const color = css(`--s${slot}`);
+    return {
+      label: v.title, data: xs.map((x) => ({ x, y: interp(pts, x) })),
+      borderColor: color, backgroundColor: color, borderWidth: 2, pointRadius: 0,
+      pointHoverRadius: 4, pointHoverBorderColor: css("--surface"), pointHoverBorderWidth: 2, spanGaps: false,
+    };
+  }));
+  $("cmp-legend").replaceChildren(...entries.map(({ v, slot }) => {
+    const key = el("span", { class: "key" }); key.style.background = css(`--s${slot}`);
+    return el("li", { title: v.title }, key, el("span", { text: v.title }));
+  }));
+  const opts = baseOptions({ xTitle: "업로드 후 경과 시간", xTick: ageTick });
+  opts.scales.x.min = 0; opts.scales.x.max = state.range;
+  opts.scales.x.ticks.stepSize = state.range <= 48 ? 6 : state.range <= 168 ? 24 : 120;
+  opts.plugins.tooltip.callbacks = {
+    title: (items) => `업로드 후 ${fmtAge(items[0].parsed.x)}`,
+    label: (item) => ` ${fmtInt.format(item.parsed.y)}  ${item.dataset.label.slice(0, 30)}`,
+  };
+  draw("cmp-chart", { type: "line", data: { datasets }, options: opts });
+}
+
+// ---------------------------------------------------------------- 상세
+function select(id) {
+  state.selected = id;
+  renderTable();
+  renderDetail();
+  $("detail").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+async function renderDetail() {
+  const v = state.byId.get(state.selected);
+  if (!v) { $("detail").hidden = true; return; }
+  $("detail").hidden = false;
+  const a = el("a", { href: `https://www.youtube.com/watch?v=${encodeURIComponent(v.id)}`, target: "_blank", rel: "noopener" });
+  a.textContent = v.title;
+  $("d-title").replaceChildren(a);
+  const meta = [
+    ["업로드", fmtDateTime.format(Date.parse(v.published_at))],
+    ["조회수", n(v.latest?.views)], ["좋아요", n(v.latest?.likes)], ["댓글", n(v.latest?.comments)],
+    ["업로드 24시간 후", n(v.views_24h_after)], ["수집 횟수", n(v.snapshots)],
+  ];
+  $("d-meta").replaceChildren(...meta.map(([k, val]) => el("span", {}, `${k} `, el("b", { text: val }))));
+
+  const pts = await loadSeries(v.id);
+  if (state.selected !== v.id) return;
+  const byAge = state.axis === "age";
+  const xOf = (p) => (byAge ? ageHours(v, p.t) : p.t);
+  const xTick = byAge ? (h) => fmtAge(h) : (t) => fmtTick.format(t);
+  const color = css("--accent");
+  const xMin = pts.length ? xOf(pts[0]) : undefined, xMax = pts.length ? xOf(pts[pts.length - 1]) : undefined;
+
+  const vOpts = baseOptions({ xTick });
+  vOpts.plugins.tooltip.callbacks = {
+    title: (items) => fmtDateTime.format(pts[items[0].dataIndex].t) + ` · 업로드 후 ${fmtAge(ageHours(v, pts[items[0].dataIndex].t))}`,
+    label: (item) => ` 조회수 ${fmtInt.format(item.parsed.y)}`,
+  };
+  vOpts.scales.y.beginAtZero = false;
+  Object.assign(vOpts.scales.x, { min: xMin, max: xMax });
+  draw("d-views", { type: "line", options: vOpts, data: { datasets: [{
+    label: "조회수", data: pts.map((p) => ({ x: xOf(p), y: p.views })),
+    borderColor: color, backgroundColor: color, borderWidth: 2,
+    pointRadius: pts.length > 60 ? 0 : 3, pointHoverRadius: 4, pointBorderColor: css("--surface"), pointBorderWidth: 1,
+  }] } });
+
+  // 구간 평균 증가 속도: 직전 수집 시각부터 이번 수집 시각까지 평균. 계단형으로 그린다.
+  const rates = [];
+  for (let i = 1; i < pts.length; i++) {
+    const dh = (pts[i].t - pts[i - 1].t) / 3600e3;
+    if (dh > 0) rates.push({ p: pts[i], prev: pts[i - 1], y: Math.max(0, (pts[i].views - pts[i - 1].views) / dh) });
+  }
+  const rOpts = baseOptions({ xTick });
+  Object.assign(rOpts.scales.x, { min: xMin, max: xMax });
+  rOpts.plugins.tooltip.callbacks = {
+    title: (items) => { const r = rates[items[0].dataIndex]; return `${fmtDateTime.format(r.prev.t)} ~ ${fmtDateTime.format(r.p.t)}`; },
+    label: (item) => ` 시간당 ${fmtInt.format(Math.round(item.parsed.y))}회`,
+  };
+  draw("d-rate", { type: "line", options: rOpts, data: { datasets: [{
+    label: "시간당 증가", data: rates.map((r) => ({ x: xOf(r.p), y: r.y })), stepped: "before",
+    borderColor: color, backgroundColor: color + "26", fill: "origin", borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+  }] } });
+
+  $("d-rows").replaceChildren(...pts.slice().reverse().map((p, i, arr) => {
+    const prev = arr[i + 1];
+    return el("tr", {},
+      el("td", { text: fmtDateTime.format(p.t) }),
+      el("td", { class: "num", text: fmtAge(ageHours(v, p.t)) }),
+      el("td", { class: "num", text: fmtInt.format(p.views) }),
+      el("td", { class: "num", text: prev ? "+" + fmtInt.format(p.views - prev.views) : "–" }),
+      el("td", { class: "num", text: n(p.likes) }),
+      el("td", { class: "num", text: n(p.comments) }));
+  }));
+}
+
+// ---------------------------------------------------------------- 이벤트
+function segment(id, onChange) {
+  $(id).addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    $(id).querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    onChange(b.dataset.v);
+  });
+}
+segment("type-filter", (v) => { state.type = v; defaultCmp(); renderTable(); renderCompare(); });
+segment("cmp-range", (v) => { state.range = +v; renderCompare(); });
+segment("d-axis", (v) => { state.axis = v; renderDetail(); });
+$("q").addEventListener("input", (e) => { state.q = e.target.value; renderTable(); });
+document.querySelectorAll("th[data-sort]").forEach((th) => th.addEventListener("click", () => {
+  if (state.sort === th.dataset.sort) state.desc = !state.desc;
+  else { state.sort = th.dataset.sort; state.desc = true; }
+  renderTable();
+}));
+// 시스템 다크 모드 전환 시 차트 색을 다시 칠한다.
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { renderTable(); renderCompare(); renderDetail(); });
+
+(async function init() {
+  try {
+    [state.channel, state.videos] = await Promise.all([loadJSON("data/channel.json"), loadJSON("data/videos.json")]);
+  } catch (e) {
+    $("ch-sub").textContent = "";
+    $("empty").hidden = false;
+    return;
+  }
+  state.byId = new Map(state.videos.map((v) => [v.id, v]));
+  if (!state.videos.length) { $("empty").hidden = false; return; }
+  $("app").hidden = false;
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  renderHeader(); renderTiles(); defaultCmp(); renderTable(); renderCompare();
+})();
+</script>
+</body>
+</html>

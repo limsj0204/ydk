@@ -1,0 +1,8 @@
+{
+  "channel_handle": "@양도끼",
+  "early_days": 7,
+  "early_interval_hours": 1,
+  "late_interval_hours": 12,
+  "full_scan_interval_hours": 24,
+  "shorts_max_seconds": 180
+}
