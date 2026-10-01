@@ -272,8 +272,10 @@ function renderHeader() {
   if (c.thumbnail) { $("ch-thumb").src = c.thumbnail; $("ch-thumb").hidden = false; }
   $("ch-sub").textContent = `마지막 수집 ${fmtDateTime.format(Date.parse(c.last_run_at))} (KST)`;
   const s = c.settings || {};
+  const lateHours = [];
+  for (let h = 0; h < 24; h += s.late_interval_hours || 24) lateHours.push(`${h}시`);
   $("footer").textContent =
-    `수집 주기: 업로드 후 ${s.early_days}일까지 ${s.early_interval_hours}시간마다, 이후 ${s.late_interval_hours}시간마다. ` +
+    `수집 주기: 업로드 후 ${s.early_days}일까지 매시 정각, 이후 매일 ${lateHours.join("·")} (한국 시간). ` +
     `YouTube 공개 조회수는 실시간이 아니라 조금 늦게 반영될 수 있습니다.`;
 }
 function renderTiles() {

@@ -2,8 +2,9 @@ name: Collect view counts
 
 on:
   schedule:
-    # 매시 17분 (정각은 GitHub 부하로 지연·누락이 잦다)
-    - cron: "17 * * * *"
+    # 정각 수집은 외부 예약 서비스(cron-job.org)가 workflow_dispatch로 실행한다.
+    # 이 예약은 정각 실행이 빠졌을 때를 위한 백업으로, 이미 수집한 시간대면 바로 끝난다.
+    - cron: "30 * * * *"
   workflow_dispatch:
 
 permissions:

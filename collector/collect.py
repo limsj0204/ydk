@@ -34,8 +34,6 @@ CHANNEL_SNAPSHOTS_PATH = DATA_DIR / "channel_snapshots.csv"
 
 API_BASE = "https://www.googleapis.com/youtube/v3/"
 SNAPSHOT_FIELDS = ["t", "views", "likes", "comments"]
-# GitHub Actions cron은 실행 시각이 수~수십 분씩 밀리므로, 주기보다 조금 일찍 와도 수집한다.
-DUE_SLACK = timedelta(minutes=20)
 
 
 # ---------------------------------------------------------------- 시간 유틸
@@ -159,11 +157,23 @@ def read_snapshots(video_id: str) -> list[tuple[datetime, int]]:
 
 # ---------------------------------------------------------------- 수집 로직
 
-def interval_for(video: dict, now: datetime, cfg: dict) -> timedelta:
+def interval_for(video: dict, now: datetime, cfg: dict) -> int:
+    """이 영상의 수집 간격(시간)."""
     age = now - parse_time(video["published_at"])
     if age < timedelta(days=cfg["early_days"]):
-        return timedelta(hours=cfg["early_interval_hours"])
-    return timedelta(hours=cfg["late_interval_hours"])
+        return cfg["early_interval_hours"]
+    return cfg["late_interval_hours"]
+
+
+def slot(dt: datetime, hours: int, cfg: dict) -> int:
+    """현지 시각 기준으로 정각부터 hours시간씩 나눈 구간 번호.
+
+    예) 12시간 간격이면 00:00~11:59가 한 구간, 12:00~23:59가 다음 구간.
+    수집은 '이 구간에 아직 안 했으면 한다'로 판단하므로, 실행이 몇 분 늦거나
+    한 번 빠져도 다음 정각부터 다시 제자리를 찾는다.
+    """
+    local = dt + timedelta(hours=cfg.get("timezone_offset_hours", 0))
+    return int(local.timestamp()) // (hours * 3600)
 
 
 def is_due(video: dict, now: datetime, cfg: dict) -> bool:
@@ -174,7 +184,8 @@ def is_due(video: dict, now: datetime, cfg: dict) -> bool:
     last = parse_time(video.get("last_collected_at"))
     if last is None:
         return True
-    return now - last >= interval_for(video, now, cfg) - DUE_SLACK
+    hours = interval_for(video, now, cfg)
+    return slot(now, hours, cfg) > slot(last, hours, cfg)
 
 
 def interpolate(series: list[tuple[datetime, int]], at: datetime) -> int | None:
@@ -265,6 +276,12 @@ def run(api: YouTubeAPI, cfg: dict, now: datetime) -> dict:
         print("설정의 채널이 바뀌었습니다. 기존 데이터를 지우고 다시 시작하세요.", file=sys.stderr)
         raise SystemExit(1)
     channel["source_handle"] = cfg["channel_handle"]
+
+    # 정각 실행이 성공했다면 같은 시간대의 백업 실행은 아무것도 하지 않는다.
+    last_run = parse_time(channel.get("last_run_at"))
+    if last_run is not None and slot(now, 1, cfg) == slot(last_run, 1, cfg):
+        return {"skipped": "이번 시간대에 이미 수집했습니다"}
+
     resolve_channel(api, cfg, channel)
     append_csv(
         CHANNEL_SNAPSHOTS_PATH,
@@ -274,7 +291,8 @@ def run(api: YouTubeAPI, cfg: dict, now: datetime) -> dict:
 
     # 1) 영상 목록: 평소엔 최신 50개만, 하루 한 번(또는 처음)은 전체 목록을 훑는다.
     last_full = parse_time(channel.get("last_full_scan_at"))
-    full = last_full is None or now - last_full >= timedelta(hours=cfg["full_scan_interval_hours"]) - DUE_SLACK
+    full_h = cfg["full_scan_interval_hours"]
+    full = last_full is None or slot(now, full_h, cfg) > slot(last_full, full_h, cfg)
     max_pages = None if full else 1
     listed = api.playlist_video_ids(channel["uploads_playlist"], max_pages)
 
@@ -346,7 +364,9 @@ def run(api: YouTubeAPI, cfg: dict, now: datetime) -> dict:
         reverse=True,
     )
     channel["last_run_at"] = fmt_time(now)
-    channel["settings"] = {k: cfg[k] for k in ("early_days", "early_interval_hours", "late_interval_hours")}
+    channel["settings"] = {
+        k: cfg.get(k) for k in ("early_days", "early_interval_hours", "late_interval_hours", "timezone_offset_hours")
+    }
     save_json(CHANNEL_PATH, channel)
     save_json(VIDEOS_PATH, ordered)
 

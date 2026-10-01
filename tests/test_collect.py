@@ -19,10 +19,11 @@ CFG = {
     "early_days": 7,
     "early_interval_hours": 1,
     "late_interval_hours": 12,
+    "timezone_offset_hours": 9,
     "full_scan_interval_hours": 24,
     "shorts_max_seconds": 180,
 }
-T0 = datetime(2026, 10, 1, 0, 17, tzinfo=timezone.utc)
+T0 = datetime(2026, 10, 1, 0, 17, tzinfo=timezone.utc)  # 한국 시각 09:17
 
 
 class FakeAPI(collect.YouTubeAPI):
@@ -104,21 +105,43 @@ class CollectTest(unittest.TestCase):
         collect.run(self.api, CFG, T0)
         self.assertEqual(self.api.requested[-1], ["new1", "old1", "short1"])
 
-        # 1시간 뒤(크론 지연으로 50분만 지난 경우 포함): 7일 이내 영상만
-        collect.run(self.api, CFG, T0 + timedelta(minutes=50))
+        # 다음 정각(KST 10:00): 7일 이내 영상만
+        collect.run(self.api, CFG, T0 + timedelta(minutes=43))
         self.assertEqual(self.api.requested[-1], ["new1", "short1"])
 
-        # 12시간 뒤: 오래된 영상도 수집
-        collect.run(self.api, CFG, T0 + timedelta(hours=12))
+        # KST 12:00: 오래된 영상도 새 12시간 구간에 들어가 수집
+        collect.run(self.api, CFG, datetime(2026, 10, 1, 3, 0, 20, tzinfo=timezone.utc))
         self.assertEqual(self.api.requested[-1], ["new1", "old1", "short1"])
 
-        self.assertEqual(len(self.rows("new1")), 3)
-        self.assertEqual(len(self.rows("old1")), 2)
+        # KST 13:00 ~ 23:00: 오래된 영상은 건너뜀
+        collect.run(self.api, CFG, datetime(2026, 10, 1, 14, 0, tzinfo=timezone.utc))
+        self.assertEqual(self.api.requested[-1], ["new1", "short1"])
+
+        # KST 다음날 00:00: 다시 수집
+        collect.run(self.api, CFG, datetime(2026, 10, 1, 15, 0, 5, tzinfo=timezone.utc))
+        self.assertEqual(self.api.requested[-1], ["new1", "old1", "short1"])
+
+        self.assertEqual(len(self.rows("new1")), 5)
+        self.assertEqual(len(self.rows("old1")), 3)
+
+    def test_backup_run_in_same_hour_is_skipped(self):
+        on_hour = datetime(2026, 10, 1, 1, 0, 30, tzinfo=timezone.utc)
+        collect.run(self.api, CFG, on_hour)
+        calls = len(self.api.requested)
+        summary = collect.run(self.api, CFG, on_hour + timedelta(minutes=30))
+        self.assertIn("skipped", summary)
+        self.assertEqual(len(self.api.requested), calls)
+
+    def test_missed_on_hour_run_recovers_next_hour(self):
+        # 10:00 실행이 빠져 10:30 백업이 수집했어도, 11:00에는 다시 정각 수집
+        collect.run(self.api, CFG, datetime(2026, 10, 1, 1, 30, tzinfo=timezone.utc))
+        collect.run(self.api, CFG, datetime(2026, 10, 1, 2, 0, 10, tzinfo=timezone.utc))
+        self.assertIn("new1", self.api.requested[-1])
 
     def test_switch_to_late_interval_after_early_days(self):
         self.api.published["new1"] = T0 - timedelta(days=6, hours=23)
         collect.run(self.api, CFG, T0)
-        collect.run(self.api, CFG, T0 + timedelta(hours=2))  # 이제 7일 경과
+        collect.run(self.api, CFG, T0 + timedelta(hours=2))  # 이제 7일 경과, 같은 12시간 구간
         self.assertNotIn("new1", self.api.requested[-1])
 
     def test_metrics_and_shorts(self):
