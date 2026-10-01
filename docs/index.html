@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>양도끼 조회수 추이</title>
+<script>
+// 저장된 테마를 그리기 전에 먼저 적용해 깜빡임을 막는다.
+try {
+  const t = localStorage.getItem("theme");
+  if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+} catch (e) {}
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
@@ -48,7 +55,10 @@ body {
   font: 14px/1.5 system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
 .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; }
+header > div:not(.seg) { flex: 1 1 220px; min-width: 0; }
+header .theme { margin-left: auto; flex: none; }
+header .seg button { padding: 4px 10px; font-size: 13px; }
 header img { width: 44px; height: 44px; border-radius: 50%; background: var(--grid); }
 h1 { font-size: 20px; margin: 0; }
 .sub { color: var(--ink-2); font-size: 13px; }
@@ -114,6 +124,11 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
     <div>
       <h1 id="ch-title">조회수 추이</h1>
       <div class="sub" id="ch-sub">불러오는 중…</div>
+    </div>
+    <div class="seg theme" id="theme" role="group" aria-label="화면 테마">
+      <button data-v="auto" aria-pressed="true" title="기기 설정 따르기">자동</button>
+      <button data-v="light" aria-pressed="false">라이트</button>
+      <button data-v="dark" aria-pressed="false">다크</button>
     </div>
   </header>
 
@@ -475,7 +490,8 @@ async function renderDetail() {
   const color = css("--accent");
   const xMin = pts.length ? xOf(pts[0]) : undefined, xMax = pts.length ? xOf(pts[pts.length - 1]) : undefined;
 
-  const vOpts = baseOptions({ xTick });
+  // 누적 조회수는 변화 폭이 좁아 '5.3만'처럼 축약하면 눈금이 겹치므로 전체 숫자로 표시한다.
+  const vOpts = baseOptions({ xTick, yTick: (v) => fmtInt.format(v) });
   vOpts.plugins.tooltip.callbacks = {
     title: (items) => fmtDateTime.format(pts[items[0].dataIndex].t) + ` · 업로드 후 ${fmtAge(ageHours(v, pts[items[0].dataIndex].t))}`,
     label: (item) => ` 조회수 ${fmtInt.format(item.parsed.y)}`,
@@ -535,7 +551,22 @@ document.querySelectorAll("th[data-sort]").forEach((th) => th.addEventListener("
   renderTable();
 }));
 // 시스템 다크 모드 전환 시 차트 색을 다시 칠한다.
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { renderTable(); renderCompare(); renderDetail(); });
+function repaint() {
+  if (!state.channel) return;
+  renderTable(); renderCompare(); renderDetail();
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", repaint);
+// 테마 선택: 자동(기기 설정) / 라이트 / 다크. 선택은 이 브라우저에 기억한다.
+segment("theme", (v) => {
+  if (v === "auto") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = v;
+  try { v === "auto" ? localStorage.removeItem("theme") : localStorage.setItem("theme", v); } catch (e) {}
+  repaint();
+});
+{
+  const cur = document.documentElement.dataset.theme || "auto";
+  $("theme").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === cur)));
+}
 
 (async function init() {
   try {
