@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "collector"))
 import collect  # noqa: E402
 
 CFG = {
+    "key": "test",
     "channel_handle": "@test",
     "early_days": 7,
     "early_interval_hours": 1,
@@ -85,21 +86,18 @@ class CollectTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         d = Path(self.tmp.name)
         collect.DATA_DIR = d
-        collect.SNAPSHOT_DIR = d / "snapshots"
-        collect.CHANNEL_PATH = d / "channel.json"
-        collect.VIDEOS_PATH = d / "videos.json"
-        collect.CHANNEL_SNAPSHOTS_PATH = d / "channel_snapshots.csv"
+        self.d = d / "test"
         self.api = FakeAPI()
 
     def tearDown(self):
         self.tmp.cleanup()
 
     def rows(self, vid):
-        with (collect.SNAPSHOT_DIR / f"{vid}.csv").open() as f:
+        with (self.d / "snapshots" / f"{vid}.csv").open() as f:
             return list(csv.DictReader(f))
 
     def videos(self):
-        return {v["id"]: v for v in json.loads(collect.VIDEOS_PATH.read_text())}
+        return {v["id"]: v for v in json.loads((self.d / "videos.json").read_text())}
 
     def test_tiered_schedule(self):
         collect.run(self.api, CFG, T0)
@@ -175,7 +173,37 @@ class CollectTest(unittest.TestCase):
         self.assertEqual(self.rows("new2")[0]["views"], "5")
 
 
+    def test_migrate_legacy_layout(self):
+        legacy = collect.DATA_DIR
+        (legacy / "snapshots").mkdir(parents=True)
+        (legacy / "snapshots" / "a.csv").write_text("t,views,likes,comments\n")
+        (legacy / "channel.json").write_text(json.dumps({"source_handle": "@b"}))
+        (legacy / "videos.json").write_text("[]")
+        channels = [{"key": "a", "channel_handle": "@a"}, {"key": "b", "channel_handle": "@b"}]
+        collect.migrate_legacy_layout(channels)
+        self.assertFalse((legacy / "channel.json").exists())
+        self.assertTrue((legacy / "b" / "channel.json").exists())
+        self.assertTrue((legacy / "b" / "snapshots" / "a.csv").exists())
+        collect.migrate_legacy_layout(channels)  # 두 번 실행해도 무해
+
+    def test_channels_are_independent(self):
+        collect.run(self.api, CFG, T0)
+        other = {**CFG, "key": "other", "channel_handle": "@other"}
+        summary = collect.run(self.api, other, T0 + timedelta(minutes=10))
+        self.assertNotIn("skipped", summary)  # 다른 채널의 수집 기록에 영향받지 않음
+        self.assertTrue((collect.DATA_DIR / "other" / "videos.json").exists())
+        collect.write_channel_index([CFG, other])
+        index = json.loads((collect.DATA_DIR / "channels.json").read_text())
+        self.assertEqual([c["key"] for c in index], ["test", "other"])
+
+
 class HelpersTest(unittest.TestCase):
+    def test_channel_configs(self):
+        cfg = {"early_days": 7, "channels": [{"key": "a"}, {"key": "b", "early_days": 3}]}
+        self.assertEqual(
+            collect.channel_configs(cfg), [{"early_days": 7, "key": "a"}, {"early_days": 3, "key": "b"}]
+        )
+
     def test_parse_duration(self):
         self.assertEqual(collect.parse_duration("PT1H2M3S"), 3723)
         self.assertEqual(collect.parse_duration("PT45S"), 45)

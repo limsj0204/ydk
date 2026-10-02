@@ -1,11 +1,12 @@
 """YouTube 채널 영상별 조회수 스냅샷 수집기.
 
-GitHub Actions에서 1시간마다 실행된다. 매 실행마다
+GitHub Actions에서 1시간마다 실행된다. config.json의 채널마다
   1. 채널 업로드 목록에서 새 영상을 찾고
   2. 수집 주기가 돌아온 영상(업로드 후 early_days 이내면 early_interval_hours,
      그 이후면 late_interval_hours)의 조회수/좋아요/댓글 수를 가져와
-  3. docs/data/snapshots/<video_id>.csv 에 한 줄씩 추가하고
-  4. 대시보드가 읽는 docs/data/videos.json, docs/data/channel.json 을 갱신한다.
+  3. docs/data/<채널 key>/snapshots/<video_id>.csv 에 한 줄씩 추가하고
+  4. 대시보드가 읽는 docs/data/<채널 key>/videos.json, channel.json 을 갱신한다.
+마지막으로 채널 목록 docs/data/channels.json 을 갱신한다.
 
 외부 패키지 없이 표준 라이브러리만 사용한다.
 """
@@ -27,10 +28,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "config.json"
 DATA_DIR = ROOT / "docs" / "data"
-SNAPSHOT_DIR = DATA_DIR / "snapshots"
-CHANNEL_PATH = DATA_DIR / "channel.json"
-VIDEOS_PATH = DATA_DIR / "videos.json"
-CHANNEL_SNAPSHOTS_PATH = DATA_DIR / "channel_snapshots.csv"
+# 채널별 폴더 안의 파일 이름
+LEGACY_FILES = ("channel.json", "videos.json", "channel_snapshots.csv", "snapshots")
 
 API_BASE = "https://www.googleapis.com/youtube/v3/"
 SNAPSHOT_FIELDS = ["t", "views", "likes", "comments"]
@@ -147,8 +146,8 @@ def append_csv(path: Path, fields: list[str], row: dict) -> None:
         w.writerow(row)
 
 
-def read_snapshots(video_id: str) -> list[tuple[datetime, int]]:
-    path = SNAPSHOT_DIR / f"{video_id}.csv"
+def read_snapshots(d: Path, video_id: str) -> list[tuple[datetime, int]]:
+    path = d / "snapshots" / f"{video_id}.csv"
     if not path.exists():
         return []
     with path.open(encoding="utf-8") as f:
@@ -201,8 +200,8 @@ def interpolate(series: list[tuple[datetime, int]], at: datetime) -> int | None:
     return series[-1][1]
 
 
-def derived_metrics(video: dict) -> dict:
-    series = read_snapshots(video["id"])
+def derived_metrics(d: Path, video: dict) -> dict:
+    series = read_snapshots(d, video["id"])
     if not series:
         return {"views_24h_after": None, "views_7d_after": None, "gain_24h": None, "snapshots": 0}
     pub = parse_time(video["published_at"])
@@ -224,7 +223,7 @@ def resolve_channel(api: YouTubeAPI, cfg: dict, channel: dict) -> dict:
         data = api.get("channels", part="snippet,contentDetails,statistics", forHandle=handle)
     items = data.get("items") or []
     if not items:
-        raise SystemExit(f"채널을 찾을 수 없습니다: {cfg.get('channel_id') or handle}")
+        raise RuntimeError(f"채널을 찾을 수 없습니다: {cfg.get('channel_id') or handle}")
     it = items[0]
     channel.update(
         {
@@ -269,12 +268,14 @@ def update_video_meta(video: dict, item: dict, is_short: bool | None, cfg: dict)
 
 
 def run(api: YouTubeAPI, cfg: dict, now: datetime) -> dict:
-    channel = load_json(CHANNEL_PATH, {})
-    videos: dict[str, dict] = {v["id"]: v for v in load_json(VIDEOS_PATH, [])}
+    """채널 하나를 수집한다. cfg는 공통 설정에 채널별 설정(key, channel_handle 등)을 합친 것."""
+    d = DATA_DIR / cfg["key"]
+    api.units = 0
+    channel = load_json(d / "channel.json", {})
+    videos: dict[str, dict] = {v["id"]: v for v in load_json(d / "videos.json", [])}
 
     if channel.get("source_handle") not in (None, cfg["channel_handle"]):
-        print("설정의 채널이 바뀌었습니다. 기존 데이터를 지우고 다시 시작하세요.", file=sys.stderr)
-        raise SystemExit(1)
+        raise RuntimeError(f"{cfg['key']}: 설정의 채널 핸들이 바뀌었습니다. 새 key를 쓰거나 기존 데이터를 지우세요.")
     channel["source_handle"] = cfg["channel_handle"]
 
     # 정각 실행이 성공했다면 같은 시간대의 백업 실행은 아무것도 하지 않는다.
@@ -284,7 +285,7 @@ def run(api: YouTubeAPI, cfg: dict, now: datetime) -> dict:
 
     resolve_channel(api, cfg, channel)
     append_csv(
-        CHANNEL_SNAPSHOTS_PATH,
+        d / "channel_snapshots.csv",
         ["t", "subscribers", "total_views", "video_count"],
         {"t": fmt_time(now), **{k: channel[k] for k in ("subscribers", "total_views", "video_count")}},
     )
@@ -344,7 +345,7 @@ def run(api: YouTubeAPI, cfg: dict, now: datetime) -> dict:
             "likes": st.get("likeCount", ""),
             "comments": st.get("commentCount", ""),
         }
-        append_csv(SNAPSHOT_DIR / f"{vid}.csv", SNAPSHOT_FIELDS, row)
+        append_csv(d / "snapshots" / f"{vid}.csv", SNAPSHOT_FIELDS, row)
         v["last_collected_at"] = row["t"]
         v["latest"] = {
             "views": row["views"],
@@ -356,7 +357,7 @@ def run(api: YouTubeAPI, cfg: dict, now: datetime) -> dict:
     # 4) 대시보드용 파생 지표
     for v in videos.values():
         if "published_at" in v:
-            v.update(derived_metrics(v))
+            v.update(derived_metrics(d, v))
 
     ordered = sorted(
         (v for v in videos.values() if "published_at" in v),
@@ -367,8 +368,8 @@ def run(api: YouTubeAPI, cfg: dict, now: datetime) -> dict:
     channel["settings"] = {
         k: cfg.get(k) for k in ("early_days", "early_interval_hours", "late_interval_hours", "timezone_offset_hours")
     }
-    save_json(CHANNEL_PATH, channel)
-    save_json(VIDEOS_PATH, ordered)
+    save_json(d / "channel.json", channel)
+    save_json(d / "videos.json", ordered)
 
     summary = {
         "full_scan": full,
@@ -381,13 +382,60 @@ def run(api: YouTubeAPI, cfg: dict, now: datetime) -> dict:
     return summary
 
 
+def channel_configs(cfg: dict) -> list[dict]:
+    """공통 설정 위에 채널별 설정을 덮어쓴 목록. 채널마다 수집 주기를 다르게 줄 수도 있다."""
+    common = {k: v for k, v in cfg.items() if k != "channels"}
+    return [{**common, **ch} for ch in cfg["channels"]]
+
+
+def migrate_legacy_layout(channels: list[dict]) -> None:
+    """채널이 하나뿐이던 시절의 docs/data/*.json 을 docs/data/<key>/ 로 옮긴다."""
+    legacy = DATA_DIR / "channel.json"
+    if not legacy.exists():
+        return
+    handle = load_json(legacy, {}).get("source_handle")
+    target = next((c for c in channels if c["channel_handle"] == handle), None)
+    if target is None:
+        raise RuntimeError(f"기존 데이터의 채널({handle})이 config.json에 없습니다.")
+    dest = DATA_DIR / target["key"]
+    dest.mkdir(parents=True, exist_ok=True)
+    for name in LEGACY_FILES:
+        src = DATA_DIR / name
+        if src.exists():
+            src.rename(dest / name)
+    print(f"기존 데이터를 data/{target['key']}/ 로 옮겼습니다.")
+
+
+def write_channel_index(channels: list[dict]) -> None:
+    index = []
+    for c in channels:
+        info = load_json(DATA_DIR / c["key"] / "channel.json", None)
+        if info is None:
+            continue
+        index.append({"key": c["key"], **{k: info.get(k) for k in ("title", "handle", "thumbnail", "last_run_at")}})
+    save_json(DATA_DIR / "channels.json", index)
+
+
 def main() -> None:
     api_key = os.environ.get("YOUTUBE_API_KEY")
     if not api_key:
         raise SystemExit("환경 변수 YOUTUBE_API_KEY가 필요합니다.")
-    cfg = load_json(CONFIG_PATH, None)
-    summary = run(YouTubeAPI(api_key), cfg, utcnow())
-    print(json.dumps(summary, ensure_ascii=False))
+    channels = channel_configs(load_json(CONFIG_PATH, None))
+    migrate_legacy_layout(channels)
+    api = YouTubeAPI(api_key)
+    now = utcnow()
+    failed = []
+    for cfg in channels:
+        # 한 채널이 실패해도 나머지 채널은 계속 수집한다.
+        try:
+            summary = run(api, cfg, now)
+        except Exception as e:  # noqa: BLE001
+            failed.append(cfg["key"])
+            summary = {"error": str(e)}
+        print(cfg["key"], json.dumps(summary, ensure_ascii=False))
+    write_channel_index(channels)
+    if failed:
+        raise SystemExit(f"수집 실패: {', '.join(failed)}")
 
 
 if __name__ == "__main__":

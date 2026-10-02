@@ -1,5 +1,8 @@
 {
-  "channel_handle": "@양도끼",
+  "channels": [
+    {"key": "yangdoki", "channel_handle": "@양도끼"},
+    {"key": "yangdoki-yaho", "channel_handle": "@양도끼얏호"}
+  ],
   "early_days": 7,
   "early_interval_hours": 1,
   "late_interval_hours": 12,

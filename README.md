@@ -1,12 +1,12 @@
 # 양도끼 조회수 추이
 
-YouTube 채널 [@양도끼](https://www.youtube.com/@양도끼)의 영상별 조회수를 주기적으로 수집해서 웹페이지로 보여줍니다.
+YouTube 채널 [@양도끼](https://www.youtube.com/@양도끼)와 [@양도끼얏호](https://www.youtube.com/@양도끼얏호)의 영상별 조회수를 주기적으로 수집해서 웹페이지로 보여줍니다. 웹페이지 위쪽 탭으로 채널을 바꿔 볼 수 있습니다.
 
 - **수집**: 매시 정각에 GitHub Actions가 `collector/collect.py`를 실행합니다 (한국 시간 기준).
   - 업로드 후 7일 이내 영상은 매시 정각에 수집합니다.
   - 그 이후 영상은 매일 00시와 12시에 수집합니다.
   - 정각 실행은 외부 예약 서비스가 GitHub에 실행 요청을 보내는 방식입니다. GitHub 자체 예약은 정각에 몇 분~수십 분씩 늦기 때문입니다. 매시 30분에 GitHub 자체 예약이 백업으로 한 번 더 돌고, 그 시간대에 이미 수집했으면 바로 끝납니다.
-- **저장**: 영상마다 `docs/data/snapshots/<영상ID>.csv`에 한 줄씩 쌓입니다. 영상 목록과 요약은 `docs/data/videos.json`에 들어갑니다.
+- **저장**: 채널별 폴더 `docs/data/<채널 key>/`에 저장합니다. 영상마다 `snapshots/<영상ID>.csv`에 한 줄씩 쌓이고, 영상 목록과 요약은 `videos.json`에 들어갑니다.
 - **대시보드**: GitHub Pages가 `docs/index.html`을 서비스합니다.
 
 ## 처음 설정하기
@@ -39,7 +39,7 @@ YouTube 채널 [@양도끼](https://www.youtube.com/@양도끼)의 영상별 조
 
 | 항목 | 기본값 | 의미 |
 |---|---|---|
-| `channel_handle` | `@양도끼` | 추적할 채널 핸들 |
+| `channels` | 양도끼, 양도끼얏호 | 추적할 채널 목록. 각 채널은 `key`(데이터 폴더 이름, 영문)와 `channel_handle`을 갖습니다. 아래 항목을 채널 안에 적으면 그 채널만 다르게 설정됩니다 |
 | `early_days` | 7 | 집중 수집 기간 (업로드 후 일수) |
 | `early_interval_hours` | 1 | 집중 수집 기간의 수집 간격 (시간) |
 | `late_interval_hours` | 12 | 그 이후의 수집 간격 (시간). 하루를 이 간격으로 나눈 정각에 수집 (12면 00시·12시) |

@@ -68,6 +68,12 @@ h1 { font-size: 20px; margin: 0; }
 .tile { padding: 14px 16px; }
 .tile .label { color: var(--ink-2); font-size: 12px; }
 .tile .value { font-size: 24px; font-weight: 600; margin-top: 2px; }
+.channels { margin-bottom: 16px; max-width: 100%; overflow-x: auto; }
+.channels button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; white-space: nowrap; }
+.channels img { width: 20px; height: 20px; border-radius: 50%; background: var(--grid); }
+.more { display: block; margin: 12px auto 0; font: inherit; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 16px; cursor: pointer; }
+.more:hover { background: var(--hover); }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
 .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface); }
 .seg button {
@@ -131,6 +137,8 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
       <button data-v="dark" aria-pressed="false">다크</button>
     </div>
   </header>
+
+  <nav class="seg channels" id="channel-tabs" aria-label="채널" hidden></nav>
 
   <div id="app" hidden>
     <section class="tiles" id="tiles"></section>
@@ -208,6 +216,7 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
           <tbody id="rows"></tbody>
         </table>
       </div>
+      <div id="more"></div>
     </section>
   </div>
 
@@ -231,7 +240,10 @@ const state = {
   type: "all", q: "", sort: "published_at", desc: true,
   cmp: new Map(),          // videoId -> 색상 슬롯(1~8). 선택이 바뀌어도 기존 영상 색은 유지한다.
   range: 168, selected: null, axis: "time",
+  channels: [], key: null, base: "data/",
+  limit: 100,              // 표에 보여줄 행 수 ("더 보기"로 늘어남)
 };
+const PAGE = 100;
 const series = new Map();  // videoId -> Promise<[{t, views, likes, comments}]>
 const charts = {};
 
@@ -263,7 +275,7 @@ async function loadJSON(path) {
 }
 function loadSeries(id) {
   if (!series.has(id)) {
-    series.set(id, fetch(`data/snapshots/${id}.csv`, { cache: "no-cache" })
+    series.set(id, fetch(`${state.base}snapshots/${id}.csv`, { cache: "no-cache" })
       .then((r) => (r.ok ? r.text() : ""))
       .then((text) => text.trim().split("\n").slice(1).filter(Boolean).map((line) => {
         const [t, views, likes, comments] = line.split(",");
@@ -323,9 +335,14 @@ function renderTable() {
     return state.desc ? y - x : x - y;
   });
   $("count").textContent = `${fmtInt.format(list.length)}개`;
+  const rest = list.length - state.limit;
+  $("more").replaceChildren(...(rest > 0 ? [el("button", {
+    class: "more", text: `더 보기 (${fmtInt.format(Math.min(PAGE, rest))}개 / 남은 ${fmtInt.format(rest)}개)`,
+    onclick: () => { state.limit += PAGE; renderTable(); },
+  })] : []));
   const now = Date.parse(state.channel.last_run_at);
   const earlyH = (state.channel.settings?.early_days || 7) * 24;
-  $("rows").replaceChildren(...list.map((v) => {
+  $("rows").replaceChildren(...list.slice(0, state.limit).map((v) => {
     const slot = state.cmp.get(v.id);
     const dot = el("span", { class: "cmp-dot" });
     if (slot) { dot.style.background = css(`--s${slot}`); dot.style.borderColor = css(`--s${slot}`); }
@@ -541,10 +558,10 @@ function segment(id, onChange) {
     onChange(b.dataset.v);
   });
 }
-segment("type-filter", (v) => { state.type = v; defaultCmp(); renderTable(); renderCompare(); });
+segment("type-filter", (v) => { state.type = v; state.limit = PAGE; defaultCmp(); renderTable(); renderCompare(); });
 segment("cmp-range", (v) => { state.range = +v; renderCompare(); });
 segment("d-axis", (v) => { state.axis = v; renderDetail(); });
-$("q").addEventListener("input", (e) => { state.q = e.target.value; renderTable(); });
+$("q").addEventListener("input", (e) => { state.q = e.target.value; state.limit = PAGE; renderTable(); });
 document.querySelectorAll("th[data-sort]").forEach((th) => th.addEventListener("click", () => {
   if (state.sort === th.dataset.sort) state.desc = !state.desc;
   else { state.sort = th.dataset.sort; state.desc = true; }
@@ -568,19 +585,57 @@ segment("theme", (v) => {
   $("theme").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === cur)));
 }
 
-(async function init() {
+// ---------------------------------------------------------------- 채널
+function renderChannelTabs() {
+  const nav = $("channel-tabs");
+  nav.hidden = state.channels.length < 2;
+  nav.replaceChildren(...state.channels.map((c) => {
+    const b = el("button", { "aria-pressed": String(c.key === state.key), onclick: () => switchChannel(c.key) });
+    if (c.thumbnail) b.append(el("img", { alt: "", src: c.thumbnail }));
+    b.append(el("span", { text: c.title || c.key }));
+    return b;
+  }));
+}
+async function loadChannel(key) {
+  state.key = key;
+  state.base = key ? `data/${encodeURIComponent(key)}/` : "data/";
+  series.clear();
+  Object.assign(state, { channel: null, videos: [], byId: new Map(), selected: null, q: "", limit: PAGE });
+  state.cmp.clear();
+  $("q").value = "";
+  $("detail").hidden = true;
+  $("app").style.opacity = "0.5";
+  renderChannelTabs();
   try {
-    [state.channel, state.videos] = await Promise.all([loadJSON("data/channel.json"), loadJSON("data/videos.json")]);
+    [state.channel, state.videos] = await Promise.all([loadJSON(state.base + "channel.json"), loadJSON(state.base + "videos.json")]);
   } catch (e) {
-    $("ch-sub").textContent = "";
-    $("empty").hidden = false;
-    return;
+    state.videos = [];
   }
+  if (state.key !== key) return;  // 그 사이 다른 채널을 눌렀으면 버린다
+  $("app").style.opacity = "";
   state.byId = new Map(state.videos.map((v) => [v.id, v]));
-  if (!state.videos.length) { $("empty").hidden = false; return; }
-  $("app").hidden = false;
-  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  const has = state.channel && state.videos.length;
+  $("app").hidden = !has;
+  $("empty").hidden = !!has;
+  if (!has) { $("ch-sub").textContent = ""; return; }
   renderHeader(); renderTiles(); defaultCmp(); renderTable(); renderCompare();
+}
+function switchChannel(key) {
+  if (key === state.key) return;
+  history.replaceState(null, "", "#" + encodeURIComponent(key));
+  loadChannel(key);
+}
+
+(async function init() {
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  try {
+    state.channels = await loadJSON("data/channels.json");
+  } catch (e) {
+    state.channels = [];  // 채널 목록이 아직 없으면 예전(단일 채널) 구조로 읽는다
+  }
+  const wanted = decodeURIComponent(location.hash.slice(1));
+  const first = state.channels.find((c) => c.key === wanted) || state.channels[0];
+  await loadChannel(first ? first.key : null);
 })();
 </script>
 </body>
