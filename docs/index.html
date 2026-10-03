@@ -113,6 +113,10 @@ tbody tr.selected { background: var(--hover); box-shadow: inset 3px 0 0 var(--ac
 .badge.hot { border-color: var(--accent); color: var(--accent); }
 .up { color: var(--up); }
 .cmp-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1.5px solid var(--axis); }
+.line-key { flex: none; display: block; }
+.legend li { cursor: pointer; border-radius: 4px; padding: 0 4px; margin: 0 -4px; }
+.legend li:hover, .legend li:focus-visible { background: var(--hover); outline: none; }
+.cmp-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 button.link { border: 0; background: none; color: var(--accent); cursor: pointer; font: inherit; padding: 0; }
 .empty { padding: 40px 16px; text-align: center; color: var(--ink-2); }
 details summary { cursor: pointer; color: var(--ink-2); font-size: 13px; margin-top: 12px; }
@@ -155,15 +159,22 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
     <section class="card">
       <div class="card-head">
         <h2>업로드 후 경과 시간별 조회수 비교</h2>
-        <div class="seg" id="cmp-range" role="group" aria-label="비교 구간">
-          <button data-v="48" aria-pressed="false">48시간</button>
-          <button data-v="168" aria-pressed="true">7일</button>
-          <button data-v="720" aria-pressed="false">30일</button>
+        <div class="cmp-tools">
+          <div class="seg" id="cmp-pick" role="group" aria-label="비교 영상 빠르게 고르기">
+            <button data-v="10">최근 10개</button>
+            <button data-v="20">최근 20개</button>
+            <button data-v="0">모두 해제</button>
+          </div>
+          <div class="seg" id="cmp-range" role="group" aria-label="비교 구간">
+            <button data-v="48" aria-pressed="false">48시간</button>
+            <button data-v="168" aria-pressed="true">7일</button>
+            <button data-v="720" aria-pressed="false">30일</button>
+          </div>
         </div>
       </div>
       <ul class="legend" id="cmp-legend"></ul>
       <div class="chart-box"><canvas id="cmp-chart" aria-label="영상별 업로드 후 조회수 비교 차트"></canvas></div>
-      <p class="muted" style="font-size:12px;margin:8px 0 0">아래 표의 ● 표시를 눌러 비교할 영상을 바꿀 수 있습니다 (최대 8개). 수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</p>
+      <p class="muted" style="font-size:12px;margin:8px 0 0">아래 표의 ○ 표시를 눌러 비교할 영상을 넣고 뺄 수 있습니다 (최대 24개). 범례에 마우스를 올리면 그 선만 강조되고, 누르면 비교에서 빠집니다. 8개가 넘으면 같은 색이 점선·짧은 점선으로 반복됩니다. 수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</p>
     </section>
 
     <section class="card" id="detail" hidden>
@@ -227,7 +238,23 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
 
 <script>
 "use strict";
-const MAX_CMP = 8;
+const MAX_CMP = 24;
+// 검증된 색은 8가지뿐이라, 9번째부터는 같은 색을 선 모양(점선, 짧은 점선)으로 구분한다.
+const DASHES = [[], [7, 4], [2, 3]];
+const slotColor = (slot) => css(`--s${((slot - 1) % 8) + 1}`);
+const slotDash = (slot) => DASHES[Math.floor((slot - 1) / 8)] || [];
+function lineKey(slot, w = 16) {
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("class", "line-key");
+  svg.setAttribute("width", w); svg.setAttribute("height", 8); svg.setAttribute("aria-hidden", "true");
+  const ln = document.createElementNS(NS, "line");
+  ln.setAttribute("x1", 0); ln.setAttribute("x2", w); ln.setAttribute("y1", 4); ln.setAttribute("y2", 4);
+  ln.setAttribute("stroke", slotColor(slot)); ln.setAttribute("stroke-width", 2.5);
+  if (slotDash(slot).length) ln.setAttribute("stroke-dasharray", slotDash(slot).join(" "));
+  svg.append(ln);
+  return svg;
+}
 const KST = "Asia/Seoul";
 const fmtInt = new Intl.NumberFormat("ko-KR");
 const fmtCompact = new Intl.NumberFormat("ko-KR", { notation: "compact", maximumFractionDigits: 1 });
@@ -344,8 +371,7 @@ function renderTable() {
   const earlyH = (state.channel.settings?.early_days || 7) * 24;
   $("rows").replaceChildren(...list.slice(0, state.limit).map((v) => {
     const slot = state.cmp.get(v.id);
-    const dot = el("span", { class: "cmp-dot" });
-    if (slot) { dot.style.background = css(`--s${slot}`); dot.style.borderColor = css(`--s${slot}`); }
+    const dot = slot ? lineKey(slot, 18) : el("span", { class: "cmp-dot" });
     const cmpBtn = el("button", {
       class: "link", "aria-label": slot ? "비교에서 빼기" : "비교에 추가", title: slot ? "비교에서 빼기" : "비교에 추가",
       onclick: (e) => { e.stopPropagation(); toggleCmp(v.id); },
@@ -441,6 +467,12 @@ function defaultCmp() {
   filtered().filter((v) => v.status !== "unavailable" && v.latest).slice(0, 5)
     .forEach((v, i) => state.cmp.set(v.id, i + 1));
 }
+function pickRecent(n) {
+  state.cmp.clear();
+  filtered().filter((v) => v.status !== "unavailable" && v.latest).slice(0, n)
+    .forEach((v, i) => state.cmp.set(v.id, i + 1));
+  renderTable(); renderCompare();
+}
 function toggleCmp(id) {
   if (state.cmp.has(id)) state.cmp.delete(id);
   else {
@@ -457,17 +489,30 @@ async function renderCompare() {
   const xs = grid(state.range);
   const datasets = await Promise.all(entries.map(async ({ v, slot }) => {
     const pts = (await loadSeries(v.id)).map((p) => ({ x: ageHours(v, p.t), y: p.views }));
-    const color = css(`--s${slot}`);
+    const color = slotColor(slot);
     return {
-      label: v.title, data: xs.map((x) => ({ x, y: interp(pts, x) })),
-      borderColor: color, backgroundColor: color, borderWidth: 2, pointRadius: 0,
+      label: v.title, data: xs.map((x) => ({ x, y: interp(pts, x) })), baseColor: color,
+      borderColor: color, backgroundColor: color, borderDash: slotDash(slot), borderWidth: 2, pointRadius: 0,
       pointHoverRadius: 4, pointHoverBorderColor: css("--surface"), pointHoverBorderWidth: 2, spanGaps: false,
     };
   }));
-  $("cmp-legend").replaceChildren(...entries.map(({ v, slot }) => {
-    const key = el("span", { class: "key" }); key.style.background = css(`--s${slot}`);
-    return el("li", { title: v.title }, key, el("span", { text: v.title }));
-  }));
+  // 범례에 올리면 그 선만 강조하고 나머지는 흐리게, 누르면 비교에서 뺀다.
+  const highlight = (idx) => {
+    const chart = charts["cmp-chart"]; if (!chart) return;
+    chart.data.datasets.forEach((ds, i) => {
+      const dim = idx != null && i !== idx;
+      ds.borderColor = dim ? ds.baseColor + "26" : ds.baseColor;
+      ds.borderWidth = idx === i ? 3 : 2;
+    });
+    chart.update("none");
+  };
+  $("cmp-legend").replaceChildren(...entries.map(({ v, slot }, i) => el("li", {
+    title: `${v.title}\n(누르면 비교에서 빼기)`, tabindex: "0",
+    onmouseenter: () => highlight(i), onmouseleave: () => highlight(null),
+    onfocus: () => highlight(i), onblur: () => highlight(null),
+    onclick: () => toggleCmp(v.id),
+    onkeydown: (e) => { if (e.key === "Enter") toggleCmp(v.id); },
+  }, lineKey(slot), el("span", { text: v.title }))));
   const opts = baseOptions({ xTitle: "업로드 후 경과 시간", xTick: ageTick });
   opts.scales.x.min = 0; opts.scales.x.max = state.range;
   opts.scales.x.ticks.stepSize = state.range <= 48 ? 6 : state.range <= 168 ? 24 : 120;
@@ -475,6 +520,8 @@ async function renderCompare() {
     title: (items) => `업로드 후 ${fmtAge(items[0].parsed.x)}`,
     label: (item) => ` ${fmtInt.format(item.parsed.y)}  ${item.dataset.label.slice(0, 30)}`,
   };
+  // 비교 영상이 많으면 툴팁이 잘리지 않도록 차트를 키운다.
+  $("cmp-chart").parentElement.style.height = `${320 + Math.max(0, datasets.length - 12) * 18}px`;
   draw("cmp-chart", { type: "line", data: { datasets }, options: opts });
 }
 
@@ -560,6 +607,7 @@ function segment(id, onChange) {
 }
 segment("type-filter", (v) => { state.type = v; state.limit = PAGE; defaultCmp(); renderTable(); renderCompare(); });
 segment("cmp-range", (v) => { state.range = +v; renderCompare(); });
+$("cmp-pick").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) pickRecent(+b.dataset.v); });
 segment("d-axis", (v) => { state.axis = v; renderDetail(); });
 $("q").addEventListener("input", (e) => { state.q = e.target.value; state.limit = PAGE; renderTable(); });
 document.querySelectorAll("th[data-sort]").forEach((th) => th.addEventListener("click", () => {
