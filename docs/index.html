@@ -177,6 +177,10 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
             <button data-v="30">최근 30개</button>
             <button data-v="0">모두 해제</button>
           </div>
+          <div class="seg" id="cmp-axis" role="group" aria-label="가로축 기준">
+            <button data-v="age" aria-pressed="true" title="모든 영상을 업로드 순간에서 시작">업로드 시점</button>
+            <button data-v="clock" aria-pressed="false" title="업로드한 날 0시를 맞추고, 업로드 시각만큼 오른쪽에서 시작">업로드 날 시각</button>
+          </div>
           <div class="seg" id="cmp-range" role="group" aria-label="비교 구간">
             <button data-v="48" aria-pressed="false">48시간</button>
             <button data-v="168" aria-pressed="true">7일</button>
@@ -186,7 +190,7 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
       </div>
       <ul class="legend" id="cmp-legend"></ul>
       <div class="chart-box"><canvas id="cmp-chart" aria-label="영상별 업로드 후 조회수 비교 차트"></canvas></div>
-      <p class="muted" style="font-size:12px;margin:8px 0 0">아래 표의 비교 칸(○)을 눌러 비교할 영상을 넣고 뺄 수 있습니다 (최대 30개). 범례에 마우스를 올리면 그 선만 강조되고, 누르면 비교에서 빠집니다. 10개가 넘으면 같은 무지개 색이 점선, 20개가 넘으면 짧은 점선으로 반복됩니다. 수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</p>
+      <p class="muted" style="font-size:12px;margin:8px 0 0">아래 표의 비교 칸(○)을 눌러 비교할 영상을 넣고 뺄 수 있습니다 (최대 30개). 범례에 마우스를 올리면 그 선만 강조되고, 누르면 비교에서 빠집니다. 10개가 넘으면 같은 무지개 색이 점선, 20개가 넘으면 짧은 점선으로 반복됩니다. '업로드 날 시각'을 고르면 업로드한 날의 0시(한국 시간)를 같은 위치에 맞춰서, 12시에 올린 영상은 12시 자리에서, 15시에 올린 영상은 15시 자리에서 선이 시작합니다. 수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</p>
     </section>
 
     <section class="card" id="detail" hidden>
@@ -280,6 +284,7 @@ const state = {
   type: "all", q: "", sort: "published_at", desc: true,
   cmp: new Map(),          // videoId -> 색상 슬롯(1~8). 선택이 바뀌어도 기존 영상 색은 유지한다.
   range: 168, selected: null, axis: "time",
+  cmpAxis: "age",          // 비교 차트 가로축: age = 업로드 후 경과, clock = 업로드한 날 0시 기준
   channels: [], key: null, base: "data/",
   limit: 100,              // 표에 보여줄 행 수 ("더 보기"로 늘어남)
 };
@@ -473,11 +478,19 @@ function interp(points, x) {
   }
   return null;
 }
-function grid(range) {
+function grid(max, hourlyUntil = 168) {
   const xs = [];
-  for (let h = 0; h <= Math.min(range, 168); h++) xs.push(h);
-  for (let h = 180; h <= range; h += 12) xs.push(h);
+  for (let h = 0; h <= Math.min(max, hourlyUntil); h++) xs.push(h);
+  for (let h = Math.ceil((hourlyUntil + 1) / 12) * 12; h <= max; h += 12) xs.push(h);
   return xs;
+}
+// 업로드한 날 0시(한국 시간)부터 업로드 순간까지의 시간
+const uploadClockHours = (v) => ((Date.parse(v.published_at) + 9 * 3600e3) % 86400e3) / 3600e3;
+// '업로드 날 시각' 축 눈금: 0시는 '2일차'처럼, 나머지는 '15시'처럼
+const clockTick = (h) => (h % 24 === 0 ? `${h / 24 + 1}일차` : `${h % 24}시`);
+function fmtClock(h) {
+  const day = Math.floor(h / 24) + 1, hh = Math.floor(h % 24), mm = Math.round((h % 1) * 60);
+  return `${day}일차 ${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 function defaultCmp() {
   state.cmp.clear();
@@ -503,9 +516,13 @@ function toggleCmp(id) {
 async function renderCompare() {
   const entries = [...state.cmp.entries()].map(([id, slot]) => ({ v: state.byId.get(id), slot })).filter((e) => e.v);
   entries.sort((a, b) => a.slot - b.slot);
-  const xs = grid(state.range);
+  const clock = state.cmpAxis === "clock";
+  // 시각 기준이면 늦게 올린 영상도 구간 끝까지 보이도록 하루를 더 그린다.
+  const xMax = clock ? state.range + 24 : state.range;
+  const xs = grid(xMax, clock ? 192 : 168);
   const datasets = await Promise.all(entries.map(async ({ v, slot }) => {
-    const pts = (await loadSeries(v.id)).map((p) => ({ x: ageHours(v, p.t), y: p.views }));
+    const shift = clock ? uploadClockHours(v) : 0;
+    const pts = (await loadSeries(v.id)).map((p) => ({ x: ageHours(v, p.t) + shift, y: p.views }));
     const color = slotColor(slot);
     return {
       label: v.title, data: xs.map((x) => ({ x, y: interp(pts, x) })), baseColor: color,
@@ -530,11 +547,17 @@ async function renderCompare() {
     onclick: () => toggleCmp(v.id),
     onkeydown: (e) => { if (e.key === "Enter") toggleCmp(v.id); },
   }, lineKey(slot), el("span", { text: v.title }))));
-  const opts = baseOptions({ xTitle: "업로드 후 경과 시간", xTick: ageTick });
-  opts.scales.x.min = 0; opts.scales.x.max = state.range;
+  const opts = clock
+    ? baseOptions({ xTitle: "업로드한 날부터 (한국 시간)", xTick: clockTick })
+    : baseOptions({ xTitle: "업로드 후 경과 시간", xTick: ageTick });
+  opts.scales.x.min = 0; opts.scales.x.max = xMax;
   opts.scales.x.ticks.stepSize = state.range <= 48 ? 6 : state.range <= 168 ? 24 : 120;
+  if (clock) {
+    // 날짜가 바뀌는 0시마다 옅은 세로선
+    opts.scales.x.grid = { display: true, drawTicks: false, color: (c) => (c.tick && c.tick.value % 24 === 0 ? css("--grid") : "transparent") };
+  }
   opts.plugins.tooltip.callbacks = {
-    title: (items) => `업로드 후 ${fmtAge(items[0].parsed.x)}`,
+    title: (items) => (clock ? fmtClock(items[0].parsed.x) : `업로드 후 ${fmtAge(items[0].parsed.x)}`),
     label: (item) => ` ${fmtInt.format(item.parsed.y)}  ${item.dataset.label.slice(0, 30)}`,
   };
   // 비교 영상이 많으면 툴팁이 잘리지 않도록 차트를 키운다.
@@ -624,6 +647,7 @@ function segment(id, onChange) {
 }
 segment("type-filter", (v) => { state.type = v; state.limit = PAGE; defaultCmp(); renderTable(); renderCompare(); });
 segment("cmp-range", (v) => { state.range = +v; renderCompare(); });
+segment("cmp-axis", (v) => { state.cmpAxis = v; renderCompare(); });
 $("cmp-pick").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) pickRecent(+b.dataset.v); });
 segment("d-axis", (v) => { state.axis = v; renderDetail(); });
 $("q").addEventListener("input", (e) => { state.q = e.target.value; state.limit = PAGE; renderTable(); });
