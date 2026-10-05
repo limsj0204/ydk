@@ -26,8 +26,9 @@ try {
   --hover: rgba(11,11,11,0.04);
   --accent: #2a78d6;
   --up: #006300;
-  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
-  --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948;
+  /* 비교 차트 색: 무지개 순서 10색 (빨·주·노·연두·초록·청록·하늘·파랑·남색·보라) */
+  --s1: #e03131; --s2: #f76707; --s3: #e0a800; --s4: #74b816; --s5: #2b8a3e;
+  --s6: #0ca678; --s7: #1c9ad6; --s8: #1c5fd6; --s9: #4c3fc4; --s10: #9c36b5;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -36,8 +37,8 @@ try {
     --muted: #898781; --grid: #2c2c2a; --axis: #383835;
     --border: rgba(255,255,255,0.10); --hover: rgba(255,255,255,0.05);
     --accent: #3987e5; --up: #0ca30c;
-    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
-    --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+    --s1: #ff6b6b; --s2: #ff922b; --s3: #fcc419; --s4: #a9e34b; --s5: #51cf66;
+    --s6: #38d9a9; --s7: #4dabf7; --s8: #4c6ef5; --s9: #845ef7; --s10: #cc5de8;
   }
 }
 :root[data-theme="dark"] {
@@ -46,8 +47,8 @@ try {
   --muted: #898781; --grid: #2c2c2a; --axis: #383835;
   --border: rgba(255,255,255,0.10); --hover: rgba(255,255,255,0.05);
   --accent: #3987e5; --up: #0ca30c;
-  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
-  --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  --s1: #ff6b6b; --s2: #ff922b; --s3: #fcc419; --s4: #a9e34b; --s5: #51cf66;
+  --s6: #38d9a9; --s7: #4dabf7; --s8: #4c6ef5; --s9: #845ef7; --s10: #cc5de8;
 }
 * { box-sizing: border-box; }
 body {
@@ -173,6 +174,7 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
           <div class="seg" id="cmp-pick" role="group" aria-label="비교 영상 빠르게 고르기">
             <button data-v="10">최근 10개</button>
             <button data-v="20">최근 20개</button>
+            <button data-v="30">최근 30개</button>
             <button data-v="0">모두 해제</button>
           </div>
           <div class="seg" id="cmp-range" role="group" aria-label="비교 구간">
@@ -184,7 +186,7 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
       </div>
       <ul class="legend" id="cmp-legend"></ul>
       <div class="chart-box"><canvas id="cmp-chart" aria-label="영상별 업로드 후 조회수 비교 차트"></canvas></div>
-      <p class="muted" style="font-size:12px;margin:8px 0 0">아래 표의 비교 칸(○)을 눌러 비교할 영상을 넣고 뺄 수 있습니다 (최대 24개). 범례에 마우스를 올리면 그 선만 강조되고, 누르면 비교에서 빠집니다. 8개가 넘으면 같은 색이 점선·짧은 점선으로 반복됩니다. 수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</p>
+      <p class="muted" style="font-size:12px;margin:8px 0 0">아래 표의 비교 칸(○)을 눌러 비교할 영상을 넣고 뺄 수 있습니다 (최대 30개). 범례에 마우스를 올리면 그 선만 강조되고, 누르면 비교에서 빠집니다. 10개가 넘으면 같은 무지개 색이 점선, 20개가 넘으면 짧은 점선으로 반복됩니다. 수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</p>
     </section>
 
     <section class="card" id="detail" hidden>
@@ -248,11 +250,12 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
 
 <script>
 "use strict";
-const MAX_CMP = 24;
-// 검증된 색은 8가지뿐이라, 9번째부터는 같은 색을 선 모양(점선, 짧은 점선)으로 구분한다.
+const MAX_CMP = 30;
+const N_COLORS = 10;
+// 색은 무지개 순서 10가지라, 11번째부터는 같은 색을 선 모양(점선, 짧은 점선)으로 구분한다.
 const DASHES = [[], [7, 4], [2, 3]];
-const slotColor = (slot) => css(`--s${((slot - 1) % 8) + 1}`);
-const slotDash = (slot) => DASHES[Math.floor((slot - 1) / 8)] || [];
+const slotColor = (slot) => css(`--s${((slot - 1) % N_COLORS) + 1}`);
+const slotDash = (slot) => DASHES[Math.floor((slot - 1) / N_COLORS)] || [];
 function lineKey(slot, w = 16) {
   const NS = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(NS, "svg");
@@ -389,7 +392,7 @@ function renderTable() {
       title: slot ? "비교에서 빼기" : "비교에 추가",
       onclick: (e) => { e.stopPropagation(); toggleCmp(v.id); },
       onkeydown: (e) => e.stopPropagation(),
-    }, dot, slot > 8 ? lineKey(slot, 18) : null);
+    }, dot, slot > N_COLORS ? lineKey(slot, 18) : null);
     const title = el("span", { class: "t" }, document.createTextNode(v.title));
     if (v.is_short) title.append(el("span", { class: "badge", text: "쇼츠" }));
     if (v.is_live) title.append(el("span", { class: "badge", text: "라이브" }));
