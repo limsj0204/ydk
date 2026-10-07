@@ -160,9 +160,6 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
 
     <div class="filters">
       <div class="seg" id="type-filter" role="group" aria-label="영상 유형">
-        <button data-v="all" aria-pressed="true">전체</button>
-        <button data-v="video" aria-pressed="false">일반 영상</button>
-        <button data-v="short" aria-pressed="false">쇼츠</button>
       </div>
       <input type="search" id="q" placeholder="제목 검색" aria-label="제목 검색">
     </div>
@@ -329,10 +326,31 @@ function loadSeries(id) {
   }
   return series.get(id);
 }
+// 영상 종류: 쇼츠 / (split_minutes가 설정된 채널은) 클립·다시보기 / 그 외 일반 영상
+function videoKind(v) {
+  if (v.is_short) return "short";
+  if (!state.split) return "video";
+  const dur = v.duration_s || 0;
+  if (!dur) return v.is_live ? "vod" : "clip";  // 길이를 아직 모르는 라이브는 다시보기로 본다
+  return dur >= state.split * 60 ? "vod" : "clip";
+}
+function renderTypeFilter() {
+  const opts = [["all", "전체"]];
+  if (state.split) opts.push(["clip", `클립 (${state.split}분 미만)`], ["vod", `다시보기 (${state.split}분 이상)`]);
+  else opts.push(["video", "일반 영상"]);
+  opts.push(["short", "쇼츠"]);
+  $("type-filter").replaceChildren(...opts.map(([v, label]) =>
+    el("button", { "data-v": v, "aria-pressed": String(v === state.type), text: label })));
+}
+function fmtDuration(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  const pad = (x) => String(x).padStart(2, "0");
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
 function filtered() {
   const q = state.q.trim().toLowerCase();
   return state.videos.filter((v) =>
-    (state.type === "all" || (state.type === "short") === !!v.is_short) &&
+    (state.type === "all" || videoKind(v) === state.type) &&
     (!q || v.title.toLowerCase().includes(q)));
 }
 
@@ -399,7 +417,9 @@ function renderTable() {
       onkeydown: (e) => e.stopPropagation(),
     }, dot, slot > N_COLORS ? lineKey(slot, 18) : null);
     const title = el("span", { class: "t" }, document.createTextNode(v.title));
+    if (v.duration_s) title.append(el("span", { class: "badge", text: fmtDuration(v.duration_s) }));
     if (v.is_short) title.append(el("span", { class: "badge", text: "쇼츠" }));
+    else if (state.split && videoKind(v) === "vod") title.append(el("span", { class: "badge", text: "다시보기" }));
     if (v.is_live) title.append(el("span", { class: "badge", text: "라이브" }));
     if (v.status === "unavailable") title.append(el("span", { class: "badge", text: "비공개/삭제" }));
     else if (v.status === "upcoming") title.append(el("span", { class: "badge", text: "예정" }));
@@ -689,7 +709,9 @@ async function loadChannel(key) {
   state.key = key;
   state.base = key ? `data/${encodeURIComponent(key)}/` : "data/";
   series.clear();
-  Object.assign(state, { channel: null, videos: [], byId: new Map(), selected: null, q: "", limit: PAGE });
+  Object.assign(state, { channel: null, videos: [], byId: new Map(), selected: null, q: "", limit: PAGE, type: "all" });
+  state.split = (state.channels.find((c) => c.key === key) || {}).split_minutes || null;
+  renderTypeFilter();
   state.cmp.clear();
   $("q").value = "";
   $("detail").hidden = true;

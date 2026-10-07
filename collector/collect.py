@@ -412,7 +412,10 @@ def write_channel_index(channels: list[dict]) -> None:
         info = load_json(DATA_DIR / c["key"] / "channel.json", None)
         if info is None:
             continue
-        index.append({"key": c["key"], **{k: info.get(k) for k in ("title", "handle", "thumbnail", "last_run_at")}})
+        entry = {"key": c["key"], **{k: info.get(k) for k in ("title", "handle", "thumbnail", "last_run_at")}}
+        # 설정값은 config.json에서 바로 가져온다 (수집을 건너뛴 실행에서도 대시보드에 반영되도록).
+        entry["split_minutes"] = c.get("split_minutes")
+        index.append(entry)
     save_json(DATA_DIR / "channels.json", index)
 
 
