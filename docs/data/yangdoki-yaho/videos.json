@@ -9,16 +9,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 8875,
-   "likes": 106,
+   "views": 9005,
+   "likes": 107,
    "comments": 5
   },
   "views_24h_after": null,
   "views_7d_after": null,
   "gain_24h": null,
-  "snapshots": 12
+  "snapshots": 13
  },
  {
   "id": "10CpEkZGyMQ",
@@ -30,16 +30,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 15153,
-   "likes": 155,
+   "views": 15334,
+   "likes": 157,
    "comments": 13
   },
   "views_24h_after": null,
   "views_7d_after": null,
   "gain_24h": null,
-  "snapshots": 15
+  "snapshots": 16
  },
  {
   "id": "KyuIwWEHyXA",
@@ -51,16 +51,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 4566,
-   "likes": 49,
+   "views": 4621,
+   "likes": 51,
    "comments": 3
   },
   "views_24h_after": null,
   "views_7d_after": null,
   "gain_24h": null,
-  "snapshots": 18
+  "snapshots": 19
  },
  {
   "id": "WQyFOVwJRUo",
@@ -72,16 +72,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 9035,
+   "views": 9030,
    "likes": 113,
    "comments": 7
   },
   "views_24h_after": 8167,
   "views_7d_after": null,
-  "gain_24h": 2062,
-  "snapshots": 39
+  "gain_24h": 1946,
+  "snapshots": 40
  },
  {
   "id": "crI5-WBPLVY",
@@ -93,16 +93,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 10875,
+   "views": 10899,
    "likes": 91,
    "comments": 13
   },
   "views_24h_after": 9091,
   "views_7d_after": null,
-  "gain_24h": 2680,
-  "snapshots": 42
+  "gain_24h": 2581,
+  "snapshots": 43
  },
  {
   "id": "IJPsipTuVnE",
@@ -114,16 +114,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 7092,
-   "likes": 56,
+   "views": 7116,
+   "likes": 58,
    "comments": 12
   },
   "views_24h_after": 5610,
   "views_7d_after": null,
-  "gain_24h": 1482,
-  "snapshots": 48
+  "gain_24h": 1484,
+  "snapshots": 49
  },
  {
   "id": "TjiXqrVN5hE",
@@ -135,16 +135,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 17074,
+   "views": 17132,
    "likes": 177,
    "comments": 17
   },
   "views_24h_after": 10951,
   "views_7d_after": null,
-  "gain_24h": 3659,
-  "snapshots": 58
+  "gain_24h": 3591,
+  "snapshots": 59
  },
  {
   "id": "U1UY_2LFPw0",
@@ -156,16 +156,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 4636,
+   "views": 4647,
    "likes": 72,
    "comments": 3
   },
   "views_24h_after": 3862,
   "views_7d_after": null,
-  "gain_24h": 473,
-  "snapshots": 62
+  "gain_24h": 450,
+  "snapshots": 63
  },
  {
   "id": "BaCF61-Xl3I",
@@ -177,16 +177,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 12150,
+   "views": 12156,
    "likes": 105,
    "comments": 8
   },
   "views_24h_after": 10193,
   "views_7d_after": null,
-  "gain_24h": 1129,
-  "snapshots": 65
+  "gain_24h": 1036,
+  "snapshots": 66
  },
  {
   "id": "neh5prEv0ZI",
@@ -198,16 +198,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 6710,
+   "views": 6715,
    "likes": 110,
    "comments": 22
   },
   "views_24h_after": 5469,
   "views_7d_after": null,
-  "gain_24h": 154,
-  "snapshots": 78
+  "gain_24h": 144,
+  "snapshots": 79
  },
  {
   "id": "TpPx0kOIbEU",
@@ -219,16 +219,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 6975,
+   "views": 6971,
    "likes": 63,
    "comments": 7
   },
   "views_24h_after": 6074,
   "views_7d_after": null,
-  "gain_24h": 281,
-  "snapshots": 82
+  "gain_24h": 274,
+  "snapshots": 83
  },
  {
   "id": "xhTTp6XohUM",
@@ -240,16 +240,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 4692,
+   "views": 4699,
    "likes": 40,
    "comments": 5
   },
   "views_24h_after": 3480,
   "views_7d_after": null,
-  "gain_24h": 52,
-  "snapshots": 104
+  "gain_24h": 46,
+  "snapshots": 105
  },
  {
   "id": "OnOPwTLSTzs",
@@ -261,16 +261,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 8464,
+   "views": 8462,
    "likes": 80,
    "comments": 5
   },
   "views_24h_after": 7716,
   "views_7d_after": null,
-  "gain_24h": 8,
-  "snapshots": 108
+  "gain_24h": 4,
+  "snapshots": 109
  },
  {
   "id": "kNySKttQo0c",
@@ -282,16 +282,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 10521,
+   "views": 10538,
    "likes": 125,
    "comments": 28
   },
   "views_24h_after": 8229,
   "views_7d_after": null,
-  "gain_24h": 104,
-  "snapshots": 127
+  "gain_24h": 109,
+  "snapshots": 128
  },
  {
   "id": "GtINdhQQtXg",
@@ -303,16 +303,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 5602,
+   "views": 5605,
    "likes": 38,
    "comments": 3
   },
   "views_24h_after": 3523,
   "views_7d_after": null,
-  "gain_24h": 3,
-  "snapshots": 130
+  "gain_24h": 5,
+  "snapshots": 131
  },
  {
   "id": "h9MalhXq1fg",
@@ -324,16 +324,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 807,
+   "views": 808,
    "likes": 6,
    "comments": 2
   },
   "views_24h_after": 599,
   "views_7d_after": null,
   "gain_24h": 3,
-  "snapshots": 146
+  "snapshots": 147
  },
  {
   "id": "GpV7kxAxzbU",
@@ -345,16 +345,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
-   "views": 2950,
+   "views": 2953,
    "likes": 43,
    "comments": 1
   },
   "views_24h_after": 2358,
   "views_7d_after": null,
   "gain_24h": 32,
-  "snapshots": 150
+  "snapshots": 151
  },
  {
   "id": "tAnYEfi_wxo",
@@ -366,7 +366,7 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-08T21:00:32Z",
+  "last_collected_at": "2026-10-08T22:00:31Z",
   "latest": {
    "views": 7442,
    "likes": 111,
@@ -375,7 +375,7 @@
   "views_24h_after": 5960,
   "views_7d_after": null,
   "gain_24h": 6,
-  "snapshots": 150
+  "snapshots": 151
  },
  {
   "id": "qdwwvOn9MvQ",
