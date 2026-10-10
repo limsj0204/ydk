@@ -9,16 +9,16 @@
   "is_short": true,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-10T22:00:32Z",
+  "last_collected_at": "2026-10-10T23:00:32Z",
   "latest": {
-   "views": 22357,
+   "views": 22428,
    "likes": 842,
    "comments": 89
   },
   "views_24h_after": 18340,
   "views_7d_after": null,
-  "gain_24h": 741,
-  "snapshots": 87
+  "gain_24h": 791,
+  "snapshots": 88
  },
  {
   "id": "7JELiLp6tBU",
