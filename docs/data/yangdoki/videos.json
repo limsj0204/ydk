@@ -1,5 +1,26 @@
 [
  {
+  "id": "Z63H8CPNzcg",
+  "first_seen_at": "2026-10-22T06:00:34Z",
+  "title": "지옥에서 돌아온 좌완 파이어볼러",
+  "published_at": "2026-10-22T05:22:06Z",
+  "thumbnail": "https://i.ytimg.com/vi/Z63H8CPNzcg/mqdefault.jpg",
+  "duration_s": 21,
+  "is_short": true,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-10-22T06:00:34Z",
+  "latest": {
+   "views": 1134,
+   "likes": 64,
+   "comments": 4
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "pZguH40znWc",
   "first_seen_at": "2026-10-17T08:00:34Z",
   "title": "스트리머+버튜버 70명이 뽑은 인생 웹툰을 소개합니다❗️",
@@ -9,16 +30,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-22T05:00:35Z",
+  "last_collected_at": "2026-10-22T06:00:34Z",
   "latest": {
-   "views": 55352,
-   "likes": 465,
+   "views": 55406,
+   "likes": 466,
    "comments": 102
   },
   "views_24h_after": 23823,
   "views_7d_after": null,
-  "gain_24h": 2225,
-  "snapshots": 113
+  "gain_24h": 2199,
+  "snapshots": 114
  },
  {
   "id": "x19sr6NbqCo",
