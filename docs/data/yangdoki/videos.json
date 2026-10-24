@@ -1,5 +1,26 @@
 [
  {
+  "id": "Nhgm1yifAbo",
+  "first_seen_at": "2026-10-24T06:00:34Z",
+  "title": "양도끼도 세상을 구한다!😺 #고세구 #고양이가세상을구한다 #고세구챌린지",
+  "published_at": "2026-10-24T05:22:28Z",
+  "thumbnail": "https://i.ytimg.com/vi/Nhgm1yifAbo/mqdefault.jpg",
+  "duration_s": 38,
+  "is_short": true,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-10-24T06:00:34Z",
+  "latest": {
+   "views": 621,
+   "likes": 165,
+   "comments": 12
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "Z63H8CPNzcg",
   "first_seen_at": "2026-10-22T06:00:34Z",
   "title": "지옥에서 돌아온 좌완 파이어볼러",
@@ -9,16 +30,16 @@
   "is_short": true,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-24T05:00:33Z",
+  "last_collected_at": "2026-10-24T06:00:34Z",
   "latest": {
-   "views": 13389,
-   "likes": 495,
+   "views": 13491,
+   "likes": 497,
    "comments": 21
   },
   "views_24h_after": 10776,
   "views_7d_after": null,
-  "gain_24h": 2781,
-  "snapshots": 46
+  "gain_24h": 2415,
+  "snapshots": 47
  },
  {
   "id": "pZguH40znWc",
@@ -30,16 +51,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-24T05:00:33Z",
+  "last_collected_at": "2026-10-24T06:00:34Z",
   "latest": {
-   "views": 57251,
+   "views": 57299,
    "likes": 480,
    "comments": 103
   },
   "views_24h_after": 23823,
   "views_7d_after": null,
-  "gain_24h": 892,
-  "snapshots": 159
+  "gain_24h": 915,
+  "snapshots": 160
  },
  {
   "id": "x19sr6NbqCo",
