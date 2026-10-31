@@ -9,7 +9,7 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-10-31T18:00:34Z",
+  "last_collected_at": "2026-10-31T19:00:34Z",
   "latest": {
    "views": 15413,
    "likes": 241,
@@ -17,8 +17,8 @@
   },
   "views_24h_after": 11198,
   "views_7d_after": null,
-  "gain_24h": 1171,
-  "snapshots": 80
+  "gain_24h": 1157,
+  "snapshots": 81
  },
  {
   "id": "Nhgm1yifAbo",
