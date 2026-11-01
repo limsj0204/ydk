@@ -9,16 +9,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-01T03:00:36Z",
+  "last_collected_at": "2026-11-01T04:00:33Z",
   "latest": {
-   "views": 16419,
-   "likes": 253,
-   "comments": 32
+   "views": 16656,
+   "likes": 258,
+   "comments": 33
   },
   "views_24h_after": 11198,
   "views_7d_after": null,
-  "gain_24h": 1899,
-  "snapshots": 89
+  "gain_24h": 1986,
+  "snapshots": 90
  },
  {
   "id": "Nhgm1yifAbo",
