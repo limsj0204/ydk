@@ -1,5 +1,26 @@
 [
  {
+  "id": "Lhmsgd8tmoI",
+  "first_seen_at": "2026-11-02T10:00:37Z",
+  "title": "자칭 웹툰 고수(?)들의 네이버 웹툰🏆티어리스트 w.타요 도현",
+  "published_at": "2026-11-02T09:47:14Z",
+  "thumbnail": "https://i.ytimg.com/vi/Lhmsgd8tmoI/mqdefault.jpg",
+  "duration_s": 3320,
+  "is_short": false,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-11-02T10:00:37Z",
+  "latest": {
+   "views": 53,
+   "likes": 15,
+   "comments": 4
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "f1eGsi8G_3o",
   "first_seen_at": "2026-10-28T08:00:37Z",
   "title": "치이카와의 진실을 알게 된 버튜버의 반응 ㄷㄷ",
@@ -9,16 +30,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-02T09:00:37Z",
+  "last_collected_at": "2026-11-02T10:00:37Z",
   "latest": {
-   "views": 21977,
-   "likes": 294,
+   "views": 22085,
+   "likes": 297,
    "comments": 35
   },
   "views_24h_after": 11198,
   "views_7d_after": null,
-  "gain_24h": 4293,
-  "snapshots": 119
+  "gain_24h": 4296,
+  "snapshots": 120
  },
  {
   "id": "Nhgm1yifAbo",
