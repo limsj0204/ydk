@@ -274,7 +274,34 @@ const fmtInt = new Intl.NumberFormat("ko-KR");
 const fmtCompact = new Intl.NumberFormat("ko-KR", { notation: "compact", maximumFractionDigits: 1 });
 const fmtDate = new Intl.DateTimeFormat("ko-KR", { timeZone: KST, year: "numeric", month: "2-digit", day: "2-digit" });
 const fmtDateTime = new Intl.DateTimeFormat("ko-KR", { timeZone: KST, month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
-const fmtTick = new Intl.DateTimeFormat("ko-KR", { timeZone: KST, month: "numeric", day: "numeric", hour: "2-digit", hour12: false });
+const KST_MS = 9 * 3600e3;
+// 상세 차트 가로축: 데이터 범위에 맞는 간격(1·2·3·6·12시간, 1·2·3·7·14·30일)을 고르고
+// 눈금을 정각(날짜 축은 한국 시간 정각, 경과 축은 정수 시간)에만 찍는다.
+const TICK_STEPS_H = [1, 2, 3, 6, 12, 24, 48, 72, 168, 336, 720];
+function hourTicks(min, max, byAge) {
+  const span = byAge ? max - min : (max - min) / 3600e3;
+  const step = TICK_STEPS_H.find((s) => span / s <= 8) || 720;
+  const out = [];
+  if (byAge) {
+    for (let h = Math.ceil(min / step - 1e-9) * step; h <= max + 1e-9; h += step) out.push({ value: h });
+  } else {
+    const ms = step * 3600e3;  // 하루 이상 간격은 한국 시간 0시에 맞춘다
+    for (let t = Math.ceil((min + KST_MS) / ms - 1e-9) * ms - KST_MS; t <= max; t += ms) out.push({ value: t });
+  }
+  return out;
+}
+function kstParts(t) {
+  const d = new Date(t + KST_MS);
+  return { m: d.getUTCMonth() + 1, d: d.getUTCDate(), h: d.getUTCHours() };
+}
+// 날짜 축 눈금: 0시는 '11/3', 나머지는 '15시'. 맨 왼쪽 눈금에는 날짜를 함께 표시한다.
+function dateTickLabel(t, i) {
+  const { m, d, h } = kstParts(t);
+  if (h === 0) return `${m}/${d}`;
+  return i === 0 ? `${m}/${d} ${h}시` : `${h}시`;
+}
+// 경과 축 눈금: '6시간', '2일', '2일 12시간'
+const ageTickLabel = (h) => (h < 48 ? `${h}시간` : h % 24 ? `${Math.floor(h / 24)}일 ${h % 24}시간` : `${h / 24}일`);
 
 const state = {
   channel: null, videos: [], byId: new Map(),
@@ -610,7 +637,7 @@ async function renderDetail() {
   if (state.selected !== v.id) return;
   const byAge = state.axis === "age";
   const xOf = (p) => (byAge ? ageHours(v, p.t) : p.t);
-  const xTick = byAge ? (h) => fmtAge(h) : (t) => fmtTick.format(t);
+  const xTick = byAge ? (h) => ageTickLabel(h) : (t, i) => dateTickLabel(t, i);
   const color = css("--accent");
   // 업로드 직후부터 수집한 영상은 '업로드 순간 = 조회수 0'으로 보고 첫 구간 속도도 그린다.
   const pub = Date.parse(v.published_at);
@@ -625,7 +652,8 @@ async function renderDetail() {
     label: (item) => ` 조회수 ${fmtInt.format(item.parsed.y)}`,
   };
   vOpts.scales.y.beginAtZero = false;
-  Object.assign(vOpts.scales.x, { min: xMin, max: xMax });
+  const fixTicks = (scale) => { scale.ticks = hourTicks(scale.min, scale.max, byAge); };
+  Object.assign(vOpts.scales.x, { min: xMin, max: xMax, afterBuildTicks: fixTicks });
   draw("d-views", { type: "line", options: vOpts, data: { datasets: [{
     label: "조회수", data: pts.map((p) => ({ x: xOf(p), y: p.views })),
     borderColor: color, backgroundColor: color, borderWidth: 2,
@@ -645,7 +673,7 @@ async function renderDetail() {
   const rateData = rates.map((r) => ({ x: xOf(r.prev), y: r.y }));
   if (rates.length) rateData.push({ x: xOf(rates[rates.length - 1].p), y: rates[rates.length - 1].y });
   const rOpts = baseOptions({ xTick });
-  Object.assign(rOpts.scales.x, { min: xMin, max: xMax });
+  Object.assign(rOpts.scales.x, { min: xMin, max: xMax, afterBuildTicks: fixTicks });
   rOpts.plugins.tooltip.callbacks = {
     title: (items) => {
       const r = rates[Math.min(items[0].dataIndex, rates.length - 1)];
