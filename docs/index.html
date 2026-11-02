@@ -612,7 +612,11 @@ async function renderDetail() {
   const xOf = (p) => (byAge ? ageHours(v, p.t) : p.t);
   const xTick = byAge ? (h) => fmtAge(h) : (t) => fmtTick.format(t);
   const color = css("--accent");
-  const xMin = pts.length ? xOf(pts[0]) : undefined, xMax = pts.length ? xOf(pts[pts.length - 1]) : undefined;
+  // 업로드 직후부터 수집한 영상은 '업로드 순간 = 조회수 0'으로 보고 첫 구간 속도도 그린다.
+  const pub = Date.parse(v.published_at);
+  const fromUpload = pts.length && pts[0].t > pub && pts[0].t - pub <= 6 * 3600e3;
+  const ratePts = fromUpload ? [{ t: pub, views: 0, upload: true }, ...pts] : pts;
+  const xMin = ratePts.length ? xOf(ratePts[0]) : undefined, xMax = pts.length ? xOf(pts[pts.length - 1]) : undefined;
 
   // 누적 조회수는 변화 폭이 좁아 '5.3만'처럼 축약하면 눈금이 겹치므로 전체 숫자로 표시한다.
   const vOpts = baseOptions({ xTick, yTick: (v) => fmtInt.format(v) });
@@ -629,19 +633,28 @@ async function renderDetail() {
   }] } });
 
   // 구간 평균 증가 속도: 직전 수집 시각부터 이번 수집 시각까지 평균. 계단형으로 그린다.
+  // 점을 각 구간의 시작에 두고 다음 점까지 그 값을 수평으로 유지(Chart.js stepped: "before")해서,
+  // 각 구간의 값이 정확히 그 구간(직전 수집 ~ 이번 수집) 위에 그려지도록 한다.
   const rates = [];
-  for (let i = 1; i < pts.length; i++) {
-    const dh = (pts[i].t - pts[i - 1].t) / 3600e3;
-    if (dh > 0) rates.push({ p: pts[i], prev: pts[i - 1], y: Math.max(0, (pts[i].views - pts[i - 1].views) / dh) });
+  for (let i = 1; i < ratePts.length; i++) {
+    const a = ratePts[i - 1], b = ratePts[i];
+    const dh = (b.t - a.t) / 3600e3;
+    if (dh > 0) rates.push({ p: b, prev: a, y: Math.max(0, (b.views - a.views) / dh) });
   }
+  // 점 i의 x는 구간 시작, y는 그 구간의 속도. 마지막 구간 끝을 닫는 점을 하나 더 둔다.
+  const rateData = rates.map((r) => ({ x: xOf(r.prev), y: r.y }));
+  if (rates.length) rateData.push({ x: xOf(rates[rates.length - 1].p), y: rates[rates.length - 1].y });
   const rOpts = baseOptions({ xTick });
   Object.assign(rOpts.scales.x, { min: xMin, max: xMax });
   rOpts.plugins.tooltip.callbacks = {
-    title: (items) => { const r = rates[items[0].dataIndex]; return `${fmtDateTime.format(r.prev.t)} ~ ${fmtDateTime.format(r.p.t)}`; },
+    title: (items) => {
+      const r = rates[Math.min(items[0].dataIndex, rates.length - 1)];
+      return `${r.prev.upload ? "업로드 " : ""}${fmtDateTime.format(r.prev.t)} ~ ${fmtDateTime.format(r.p.t)}`;
+    },
     label: (item) => ` 시간당 ${fmtInt.format(Math.round(item.parsed.y))}회`,
   };
   draw("d-rate", { type: "line", options: rOpts, data: { datasets: [{
-    label: "시간당 증가", data: rates.map((r) => ({ x: xOf(r.p), y: r.y })), stepped: "before",
+    label: "시간당 증가", data: rateData, stepped: "before",
     borderColor: color, backgroundColor: color + "26", fill: "origin", borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
   }] } });
 
