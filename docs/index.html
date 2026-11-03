@@ -145,6 +145,10 @@ input[type="search"]::placeholder { color: var(--muted); }
 .legend li { display: inline-flex; align-items: center; gap: 6px; max-width: 280px; cursor: pointer; border-radius: 6px; padding: 1px 6px; margin: 0 -6px; }
 .legend li:hover, .legend li:focus-visible { background: var(--hover); outline: none; }
 .legend li span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legend li.clear-all { color: var(--tint-red); background: var(--tint-red-bg); font-weight: 500; margin: 0; padding: 1px 8px; }
+.legend li.clear-all:hover, .legend li.clear-all:focus-visible { background: var(--tint-red-bg); box-shadow: inset 0 0 0 1px currentColor; }
+th.cmp-head { cursor: pointer; }
+th.cmp-head:hover { color: var(--tint-red); }
 .line-key { flex: none; display: block; }
 .base-key { width: 16px; height: 10px; border-radius: 2px; flex: none; background: var(--band); border-top: 2px solid var(--muted); }
 details.help { margin-top: 12px; color: var(--ink-2); font-size: 12.5px; }
@@ -257,7 +261,7 @@ footer a { color: inherit; }
           <button data-v="10">최근 10개</button>
           <button data-v="20">최근 20개</button>
           <button data-v="30">최근 30개</button>
-          <button data-v="0">모두 해제</button>
+          <button data-v="0">전체 취소</button>
         </div>
         <div class="seg"><button id="base-toggle" aria-pressed="true" title="이 채널 영상들의 평소 추이(중간값과 25~75% 범위)를 함께 표시">평소 범위</button></div>
         <span class="spacer"></span>
@@ -321,7 +325,7 @@ footer a { color: inherit; }
         <table>
           <thead>
             <tr>
-              <th title="비교 차트에 표시">비교</th>
+              <th class="cmp-head" id="cmp-head" title="누르면 비교 전체 취소">비교</th>
               <th>영상</th>
               <th data-sort="published_at">업로드</th>
               <th class="num" data-sort="views">조회수</th>
@@ -789,6 +793,14 @@ async function renderCompare() {
     onclick: () => toggleCmp(v.id),
     onkeydown: (e) => { if (e.key === "Enter") toggleCmp(v.id); },
   }, lineKey(slot), el("span", { text: v.title }))));
+  // 선택된 영상이 있으면 범례 맨 앞에 '전체 취소' 버튼
+  if (entries.length) {
+    $("cmp-legend").prepend(el("li", {
+      class: "clear-all", tabindex: "0", title: "비교 중인 영상을 모두 뺍니다",
+      onclick: () => pickRecent(0), onkeydown: (e) => { if (e.key === "Enter") pickRecent(0); },
+    }, el("span", { text: `✕ 전체 취소 (${entries.length})` })));
+  }
+  $("cmp-head").textContent = entries.length ? `비교 ${entries.length}` : "비교";
   if (state.showBase) {
     const li = showBand
       ? el("li", { title: "업로드 직후부터 추적한 같은 종류 영상들의 중간값과 25~75% 범위", style: "cursor:default" },
@@ -926,6 +938,7 @@ function applyBaseToggle() {
   $("base-toggle").setAttribute("aria-pressed", String(state.showBase));
   document.body.classList.toggle("base-off", !state.showBase);
 }
+$("cmp-head").addEventListener("click", () => { if (state.cmp.size) pickRecent(0); });
 $("base-toggle").addEventListener("click", () => {
   state.showBase = !state.showBase;
   try { localStorage.setItem("baseline", state.showBase ? "on" : "off"); } catch (e) {}
