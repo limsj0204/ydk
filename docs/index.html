@@ -11,22 +11,35 @@ try {
   if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
 } catch (e) {}
 </script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
   color-scheme: light;
-  --page: #f9f9f7;
-  --surface: #fcfcfb;
-  --ink: #0b0b0b;
-  --ink-2: #52514e;
-  --muted: #898781;
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
-  --border: rgba(11,11,11,0.10);
-  --hover: rgba(11,11,11,0.04);
-  --accent: #2a78d6;
-  --up: #006300;
-  --band: rgba(137,135,129,0.22);   /* 평소 범위(25~75%) 띠 */
+  --page: #f4f5f7;
+  --surface: #ffffff;
+  --ink: #111318;
+  --ink-2: #4b5260;
+  --muted: #8b919c;
+  --grid: #e9ebef;
+  --axis: #d0d4db;
+  --border: rgba(17,19,24,0.08);
+  --hover: rgba(17,19,24,0.04);
+  --seg-track: #eceef2;
+  --seg-on: #ffffff;
+  --shadow: 0 1px 2px rgba(16,24,40,0.04), 0 2px 8px rgba(16,24,40,0.05);
+  --shadow-on: 0 1px 2px rgba(16,24,40,0.10), 0 0 0 1px rgba(16,24,40,0.04);
+  --accent: #2f6fec;
+  --up: #0f8a3c;
+  --warn: #d9480f;
+  --band: rgba(139,145,156,0.16);   /* 평소 범위(25~75%) 띠 */
+  /* 배지: 연한 배경 + 진한 글자 */
+  --tint-gray-bg: rgba(17,19,24,0.05);   --tint-gray: #4b5260;
+  --tint-blue-bg: rgba(47,111,236,0.10); --tint-blue: #2457c5;
+  --tint-pink-bg: rgba(214,51,108,0.10); --tint-pink: #c2255c;
+  --tint-violet-bg: rgba(112,72,232,0.10); --tint-violet: #6741d9;
+  --tint-red-bg: rgba(224,49,49,0.10);   --tint-red: #c92a2a;
   /* 비교 차트 색: 무지개 순서 10색 (빨·주·노·연두·초록·청록·하늘·파랑·남색·보라) */
   --s1: #e03131; --s2: #f76707; --s3: #e0a800; --s4: #74b816; --s5: #2b8a3e;
   --s6: #0ca678; --s7: #1c9ad6; --s8: #1c5fd6; --s9: #4c3fc4; --s10: #9c36b5;
@@ -34,112 +47,171 @@ try {
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
-    --muted: #898781; --grid: #2c2c2a; --axis: #383835;
-    --border: rgba(255,255,255,0.10); --hover: rgba(255,255,255,0.05);
-    --accent: #3987e5; --up: #0ca30c;
+    --page: #0e0f12; --surface: #17191d; --ink: #f2f3f5; --ink-2: #b3b9c3; --muted: #7c838e;
+    --grid: #262a31; --axis: #363b44; --border: rgba(255,255,255,0.08); --hover: rgba(255,255,255,0.05);
+    --seg-track: #0f1114; --seg-on: #262a31;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3); --shadow-on: 0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
+    --accent: #5b8cff; --up: #3ccb6f; --warn: #ff922b; --band: rgba(139,145,156,0.12);
+    --tint-gray-bg: rgba(255,255,255,0.07); --tint-gray: #c3c8d0;
+    --tint-blue-bg: rgba(91,140,255,0.16); --tint-blue: #91b0ff;
+    --tint-pink-bg: rgba(247,131,172,0.15); --tint-pink: #f783ac;
+    --tint-violet-bg: rgba(177,151,252,0.15); --tint-violet: #b197fc;
+    --tint-red-bg: rgba(255,135,135,0.14); --tint-red: #ff8787;
     --s1: #ff6b6b; --s2: #ff922b; --s3: #fcc419; --s4: #a9e34b; --s5: #51cf66;
     --s6: #38d9a9; --s7: #4dabf7; --s8: #4c6ef5; --s9: #845ef7; --s10: #cc5de8;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
-  --muted: #898781; --grid: #2c2c2a; --axis: #383835;
-  --border: rgba(255,255,255,0.10); --hover: rgba(255,255,255,0.05);
-  --accent: #3987e5; --up: #0ca30c;
+  --page: #0e0f12; --surface: #17191d; --ink: #f2f3f5; --ink-2: #b3b9c3; --muted: #7c838e;
+  --grid: #262a31; --axis: #363b44; --border: rgba(255,255,255,0.08); --hover: rgba(255,255,255,0.05);
+  --seg-track: #0f1114; --seg-on: #262a31;
+  --shadow: 0 1px 2px rgba(0,0,0,0.3); --shadow-on: 0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
+  --accent: #5b8cff; --up: #3ccb6f; --warn: #ff922b; --band: rgba(139,145,156,0.12);
+  --tint-gray-bg: rgba(255,255,255,0.07); --tint-gray: #c3c8d0;
+  --tint-blue-bg: rgba(91,140,255,0.16); --tint-blue: #91b0ff;
+  --tint-pink-bg: rgba(247,131,172,0.15); --tint-pink: #f783ac;
+  --tint-violet-bg: rgba(177,151,252,0.15); --tint-violet: #b197fc;
+  --tint-red-bg: rgba(255,135,135,0.14); --tint-red: #ff8787;
   --s1: #ff6b6b; --s2: #ff922b; --s3: #fcc419; --s4: #a9e34b; --s5: #51cf66;
   --s6: #38d9a9; --s7: #4dabf7; --s8: #4c6ef5; --s9: #845ef7; --s10: #cc5de8;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--page); color: var(--ink);
-  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font: 14px/1.55 "Pretendard Variable", Pretendard, system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  -webkit-font-smoothing: antialiased; letter-spacing: -0.005em;
 }
-.wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
-header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; }
+button, input { font: inherit; letter-spacing: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 28px 16px 56px; }
+
+/* ---- 머리글 */
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 22px; }
 header > div:not(.seg) { flex: 1 1 220px; min-width: 0; }
 header .theme { margin-left: auto; flex: none; }
-header .seg button { padding: 4px 10px; font-size: 13px; }
-header img { width: 44px; height: 44px; border-radius: 50%; background: var(--grid); }
-h1 { font-size: 20px; margin: 0; }
-.sub { color: var(--ink-2); font-size: 13px; }
+header .seg button { padding: 4px 10px; font-size: 12.5px; }
+header img { width: 52px; height: 52px; border-radius: 50%; background: var(--grid);
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--border); }
+h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin: 0; line-height: 1.3; }
+.sub { color: var(--ink-2); font-size: 13px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--up); flex: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 20%, transparent); }
+.status-dot.late { background: var(--warn); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 20%, transparent); }
 .muted { color: var(--muted); }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.tile, .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
-.tile { padding: 14px 16px; }
-.tile .label { color: var(--ink-2); font-size: 12px; }
-.tile .value { font-size: 24px; font-weight: 600; margin-top: 2px; }
-.channels { margin-bottom: 16px; max-width: 100%; overflow-x: auto; }
-.channels button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; white-space: nowrap; }
-.channels img { width: 20px; height: 20px; border-radius: 50%; background: var(--grid); }
-.more { display: block; margin: 12px auto 0; font: inherit; color: var(--ink); background: var(--surface);
-  border: 1px solid var(--border); border-radius: 8px; padding: 6px 16px; cursor: pointer; }
-.more:hover { background: var(--hover); }
-.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
-.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface); }
+
+/* ---- 알약형 선택 버튼 */
+.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--seg-track); max-width: 100%;
+  overflow-x: auto; scrollbar-width: none; }
+.seg::-webkit-scrollbar { display: none; }
 .seg button {
-  border: 0; background: transparent; color: var(--ink-2); padding: 6px 12px; font: inherit; cursor: pointer;
+  border: 0; background: transparent; color: var(--ink-2); padding: 5px 12px; border-radius: 7px;
+  cursor: pointer; white-space: nowrap; transition: background .12s, color .12s;
 }
-.seg button + button { border-left: 1px solid var(--border); }
-.seg button:hover { background: var(--hover); }
-.seg button[aria-pressed="true"] { color: var(--ink); font-weight: 600; background: var(--hover); }
+.seg button:hover { color: var(--ink); background: var(--hover); }
+.seg button[aria-pressed="true"] { color: var(--ink); font-weight: 600; background: var(--seg-on); box-shadow: var(--shadow-on); }
+.channels { margin-bottom: 18px; overflow-x: auto; }
+.channels button { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 8px; font-size: 14px; }
+.channels img { width: 24px; height: 24px; border-radius: 50%; background: var(--grid); }
+
+/* ---- 요약 카드 */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.tile, .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); }
+.tile { padding: 16px 18px; min-width: 0; }
+.tile .label { color: var(--ink-2); font-size: 12.5px; font-weight: 500; }
+.tile .value { font-size: 26px; font-weight: 700; letter-spacing: -0.025em; margin-top: 2px; line-height: 1.25; }
+.tile .note { color: var(--muted); font-size: 12px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- 필터 줄 */
+.filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; }
 input[type="search"] {
-  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; padding: 6px 10px; min-width: 0; flex: 1 1 200px; max-width: 320px;
+  color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 7px 12px; min-width: 0; flex: 1 1 200px; max-width: 320px; box-shadow: var(--shadow);
 }
-.card { padding: 16px; margin-bottom: 20px; }
-.card-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.card h2 { font-size: 15px; margin: 0; }
-.card h2 a { color: inherit; }
-.chart-box { position: relative; height: 320px; }
+input[type="search"]::placeholder { color: var(--muted); }
+
+/* ---- 카드 */
+.card { padding: 20px; margin-bottom: 18px; }
+.card-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.card h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.015em; margin: 0; }
+.card h2 a { color: inherit; text-decoration: none; }
+.card h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.card-sub { color: var(--muted); font-size: 12.5px; margin: 2px 0 0; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+.toolbar .spacer { flex: 1; }
+.chart-box { position: relative; height: 340px; }
 .chart-box.short { height: 220px; }
-.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 8px; padding: 0; list-style: none; font-size: 12px; color: var(--ink-2); }
-.legend li { display: inline-flex; align-items: center; gap: 6px; max-width: 280px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 10px; padding: 0; list-style: none; font-size: 12px; color: var(--ink-2); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; max-width: 280px; cursor: pointer; border-radius: 6px; padding: 1px 6px; margin: 0 -6px; }
+.legend li:hover, .legend li:focus-visible { background: var(--hover); outline: none; }
 .legend li span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.key { width: 14px; height: 2px; border-radius: 1px; flex: none; }
-.table-wrap { overflow-x: auto; }
+.line-key { flex: none; display: block; }
+.base-key { width: 16px; height: 10px; border-radius: 2px; flex: none; background: var(--band); border-top: 2px solid var(--muted); }
+details.help { margin-top: 12px; color: var(--ink-2); font-size: 12.5px; }
+details.help summary { color: var(--muted); }
+details.help ul { margin: 8px 0 0; padding-left: 18px; line-height: 1.7; }
+details summary { cursor: pointer; color: var(--ink-2); font-size: 13px; width: fit-content; }
+details summary:hover { color: var(--ink); }
+
+/* ---- 상세 */
+.detail-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.detail-meta span { background: var(--tint-gray-bg); color: var(--ink-2); border-radius: 8px; padding: 3px 10px; font-size: 12.5px; }
+.detail-meta b { color: var(--ink); font-weight: 600; margin-left: 2px; }
+.grid2 { display: grid; gap: 18px; }
+.chart-title { font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin: 0 0 8px; }
+
+/* ---- 표 */
+.table-wrap { overflow-x: auto; margin: 0 -20px; padding: 0 20px; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
-th, td { padding: 8px 10px; border-bottom: 1px solid var(--grid); text-align: left; white-space: nowrap; }
-th { color: var(--ink-2); font-weight: 500; font-size: 12px; position: sticky; top: 0; background: var(--surface); }
+th, td { padding: 10px 12px; border-bottom: 1px solid var(--grid); text-align: left; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; position: sticky; top: 0; background: var(--surface); z-index: 1; }
 th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
 th[data-sort] { cursor: pointer; user-select: none; }
 th[data-sort]:hover { color: var(--ink); }
-tbody tr { cursor: pointer; }
+tbody tr { cursor: pointer; transition: background .1s; }
 tbody tr:hover { background: var(--hover); }
-tbody tr.selected { background: var(--hover); box-shadow: inset 3px 0 0 var(--accent); }
-.vid { display: flex; align-items: center; gap: 10px; min-width: 280px; max-width: 460px; white-space: normal; }
-.vid img { width: 64px; height: 36px; object-fit: cover; border-radius: 4px; flex: none; background: var(--grid); }
-.vid .t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.badge { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--border); color: var(--ink-2); margin-left: 4px; vertical-align: 1px; }
-.badge.hot { border-color: var(--accent); color: var(--accent); }
+tbody tr.selected { background: color-mix(in srgb, var(--accent) 7%, transparent); box-shadow: inset 3px 0 0 var(--accent); }
+.vid { display: flex; align-items: center; gap: 12px; min-width: 300px; max-width: 480px; white-space: normal; }
+.vid img { width: 80px; height: 45px; object-fit: cover; border-radius: 8px; flex: none; background: var(--grid); }
+.vid .t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 500; line-height: 1.4; }
+.badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.badge { display: inline-block; font-size: 11px; font-weight: 500; line-height: 18px; padding: 0 7px; border-radius: 6px;
+  background: var(--tint-gray-bg); color: var(--tint-gray); font-variant-numeric: tabular-nums; }
+.badge.hot { background: var(--tint-blue-bg); color: var(--tint-blue); }
+.badge.short { background: var(--tint-pink-bg); color: var(--tint-pink); }
+.badge.vod { background: var(--tint-violet-bg); color: var(--tint-violet); }
+.badge.off { background: var(--tint-red-bg); color: var(--tint-red); }
 .up { color: var(--up); }
+.muted-num { color: var(--muted); font-size: 11px; }
+body.base-off .col-base { display: none; }
 .cmp-dot {
   width: 20px; height: 20px; border-radius: 50%; flex: none; border: 2px solid var(--axis);
   display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; line-height: 1;
 }
 td.cmp-cell { padding: 0; }
 button.cmp-btn {
-  display: flex; align-items: center; gap: 6px; width: 100%; min-width: 48px; min-height: 52px; padding: 0 12px;
-  border: 0; background: none; cursor: pointer; border-radius: 6px;
+  display: flex; align-items: center; gap: 6px; width: 100%; min-width: 48px; min-height: 60px; padding: 0 12px;
+  border: 0; background: none; cursor: pointer; border-radius: 8px;
 }
 button.cmp-btn:hover .cmp-dot { border-color: var(--ink-2); }
 button.cmp-btn:hover { background: var(--hover); }
-.line-key { flex: none; display: block; }
-.legend li { cursor: pointer; border-radius: 4px; padding: 0 4px; margin: 0 -4px; }
-.legend li:hover, .legend li:focus-visible { background: var(--hover); outline: none; }
-body.base-off .col-base { display: none; }
-.base-key { width: 16px; height: 10px; border-radius: 2px; flex: none; background: var(--band); border-top: 2px solid var(--muted); }
-.muted-num { color: var(--muted); font-size: 11px; }
-.cmp-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-button.link { border: 0; background: none; color: var(--accent); cursor: pointer; font: inherit; padding: 0; }
-.empty { padding: 40px 16px; text-align: center; color: var(--ink-2); }
-details summary { cursor: pointer; color: var(--ink-2); font-size: 13px; margin-top: 12px; }
-.detail-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--ink-2); font-size: 13px; margin-bottom: 12px; }
-.detail-meta b { color: var(--ink); font-weight: 600; }
-.grid2 { display: grid; gap: 16px; }
-.chart-title { font-size: 12px; color: var(--ink-2); margin: 0 0 6px; }
-footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
+.more { display: block; margin: 14px auto 0; color: var(--ink); background: var(--seg-track);
+  border: 0; border-radius: 10px; padding: 8px 18px; cursor: pointer; font-weight: 500; }
+.more:hover { background: var(--hover); box-shadow: inset 0 0 0 1px var(--border); }
+button.link { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; }
+.empty { padding: 48px 16px; text-align: center; color: var(--ink-2); }
+footer { color: var(--muted); font-size: 12px; margin-top: 28px; text-align: center; line-height: 1.7; }
+footer a { color: inherit; }
+@media (max-width: 600px) {
+  .wrap { padding-top: 20px; }
+  .card { padding: 16px; }
+  .table-wrap { margin: 0 -16px; padding: 0 16px; }
+  .tiles { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile { padding: 12px 14px; }
+  .tile .value { font-size: 21px; }
+  .chart-box { height: 300px; }
+}
 </style>
 </head>
 <body>
@@ -170,29 +242,42 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
 
     <section class="card">
       <div class="card-head">
-        <h2>업로드 후 경과 시간별 조회수 비교</h2>
-        <div class="cmp-tools">
-          <div class="seg" id="cmp-pick" role="group" aria-label="비교 영상 빠르게 고르기">
-            <button data-v="10">최근 10개</button>
-            <button data-v="20">최근 20개</button>
-            <button data-v="30">최근 30개</button>
-            <button data-v="0">모두 해제</button>
-          </div>
-          <div class="seg"><button id="base-toggle" aria-pressed="true" title="이 채널 영상들의 평소 추이(중간값과 25~75% 범위)를 함께 표시">평소 범위</button></div>
-          <div class="seg" id="cmp-axis" role="group" aria-label="가로축 기준">
-            <button data-v="age" aria-pressed="true" title="모든 영상을 업로드 순간에서 시작">업로드 시점</button>
-            <button data-v="clock" aria-pressed="false" title="업로드한 날 0시를 맞추고, 업로드 시각만큼 오른쪽에서 시작">업로드 날 시각</button>
-          </div>
-          <div class="seg" id="cmp-range" role="group" aria-label="비교 구간">
-            <button data-v="48" aria-pressed="false">48시간</button>
-            <button data-v="168" aria-pressed="true">7일</button>
-            <button data-v="720" aria-pressed="false">30일</button>
-          </div>
+        <div>
+          <h2>업로드 후 조회수 비교</h2>
+          <p class="card-sub">영상들의 조회수 흐름을 같은 출발선에서 겹쳐 봅니다</p>
+        </div>
+        <div class="seg" id="cmp-range" role="group" aria-label="비교 구간">
+          <button data-v="48" aria-pressed="false">48시간</button>
+          <button data-v="168" aria-pressed="true">7일</button>
+          <button data-v="720" aria-pressed="false">30일</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="seg" id="cmp-pick" role="group" aria-label="비교 영상 빠르게 고르기">
+          <button data-v="10">최근 10개</button>
+          <button data-v="20">최근 20개</button>
+          <button data-v="30">최근 30개</button>
+          <button data-v="0">모두 해제</button>
+        </div>
+        <div class="seg"><button id="base-toggle" aria-pressed="true" title="이 채널 영상들의 평소 추이(중간값과 25~75% 범위)를 함께 표시">평소 범위</button></div>
+        <span class="spacer"></span>
+        <div class="seg" id="cmp-axis" role="group" aria-label="가로축 기준">
+          <button data-v="age" aria-pressed="true" title="모든 영상을 업로드 순간에서 시작">업로드 시점</button>
+          <button data-v="clock" aria-pressed="false" title="업로드한 날 0시를 맞추고, 업로드 시각만큼 오른쪽에서 시작">업로드 날 시각</button>
         </div>
       </div>
       <ul class="legend" id="cmp-legend"></ul>
       <div class="chart-box"><canvas id="cmp-chart" aria-label="영상별 업로드 후 조회수 비교 차트"></canvas></div>
-      <p class="muted" style="font-size:12px;margin:8px 0 0">아래 표의 비교 칸(○)을 눌러 비교할 영상을 넣고 뺄 수 있습니다 (최대 30개). 범례에 마우스를 올리면 그 선만 강조되고, 누르면 비교에서 빠집니다. 10개가 넘으면 같은 무지개 색이 점선, 20개가 넘으면 짧은 점선으로 반복됩니다. '업로드 날 시각'을 고르면 업로드한 날의 0시(한국 시간)를 같은 위치에 맞춰서, 12시에 올린 영상은 12시 자리에서, 15시에 올린 영상은 15시 자리에서 선이 시작합니다. '평소 범위'는 업로드 직후부터 추적한 같은 종류 영상들의 조회수 중간값(회색 선)과 25~75% 구간(회색 띠)입니다. 표의 '평소 대비'는 업로드 24시간 후 조회수가 그 중간값의 몇 배인지이고, 24시간이 안 된 영상은 지금까지 경과 시간 기준입니다. 수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</p>
+      <details class="help">
+        <summary>보는 법</summary>
+        <ul>
+          <li>아래 표의 비교 칸(○)을 눌러 영상을 넣고 뺄 수 있습니다 (최대 30개). 범례에 마우스를 올리면 그 선만 강조되고, 누르면 비교에서 빠집니다.</li>
+          <li>10개가 넘으면 같은 무지개 색이 점선, 20개가 넘으면 짧은 점선으로 반복됩니다.</li>
+          <li><b>업로드 날 시각</b>: 업로드한 날의 0시(한국 시간)를 같은 위치에 맞춥니다. 12시에 올린 영상은 12시 자리에서, 15시에 올린 영상은 15시 자리에서 선이 시작합니다.</li>
+          <li><b>평소 범위</b>: 업로드 직후부터 추적한 같은 종류 영상들의 조회수 중간값(회색 선)과 25~75% 구간(회색 띠)입니다. 표의 '평소 대비'는 업로드 24시간 후 조회수가 그 중간값의 몇 배인지이고, 24시간이 안 된 영상은 지금까지 경과 시간 기준입니다.</li>
+          <li>수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</li>
+        </ul>
+      </details>
     </section>
 
     <section class="card" id="detail" hidden>
@@ -227,7 +312,10 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
 
     <section class="card">
       <div class="card-head">
-        <h2>영상 목록 <span class="muted" id="count" style="font-weight:400"></span></h2>
+        <div>
+          <h2>영상 목록 <span class="muted" id="count" style="font-weight:500"></span></h2>
+          <p class="card-sub">제목을 누르면 영상별 추이를, 비교 칸을 누르면 위 차트에 추가합니다</p>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -395,27 +483,60 @@ function renderHeader() {
   document.title = `${c.title} 조회수 추이`;
   $("ch-title").textContent = `${c.title} 조회수 추이`;
   if (c.thumbnail) { $("ch-thumb").src = c.thumbnail; $("ch-thumb").hidden = false; }
-  $("ch-sub").textContent = `마지막 수집 ${fmtDateTime.format(Date.parse(c.last_run_at))} (KST)`;
+  renderStatus();
   const s = c.settings || {};
   const lateHours = [];
   for (let h = 0; h < 24; h += s.late_interval_hours || 24) lateHours.push(`${h}시`);
-  $("footer").textContent =
-    `수집 주기: 업로드 후 ${s.early_days}일까지 매시 정각, 이후 매일 ${lateHours.join("·")} (한국 시간). ` +
-    `YouTube 공개 조회수는 실시간이 아니라 조금 늦게 반영될 수 있습니다.`;
+  $("footer").replaceChildren(
+    `수집 주기: 업로드 후 ${s.early_days}일까지 매시 정각, 이후 매일 ${lateHours.join("·")} (한국 시간)`,
+    el("br"),
+    "YouTube 공개 조회수는 실시간이 아니라 조금 늦게 반영될 수 있습니다 · ",
+    el("a", { href: "https://github.com/limsj0204/ydk", target: "_blank", rel: "noopener", text: "GitHub" }),
+  );
 }
+function fmtAgo(ms) {
+  const m = Math.max(0, Math.round(ms / 60000));
+  if (m < 1) return "방금";
+  if (m < 60) return `${m}분 전`;
+  const h = Math.round(m / 60);
+  return h < 48 ? `${h}시간 전` : `${Math.round(h / 24)}일 전`;
+}
+// 머리글 상태: 마지막 수집이 75분 넘게 지나면 주황 점으로 '지연' 표시
+function renderStatus() {
+  if (!state.channel) return;
+  const last = Date.parse(state.channel.last_run_at), ago = Date.now() - last;
+  const late = ago > 75 * 60000;
+  $("ch-sub").replaceChildren(
+    el("span", { class: "status-dot" + (late ? " late" : "") }),
+    `${late ? "수집 지연 · " : ""}마지막 수집 ${fmtDateTime.format(last)} (${fmtAgo(ago)})`,
+  );
+}
+setInterval(renderStatus, 60000);
 function renderTiles() {
   const now = Date.parse(state.channel.last_run_at);
   const active = state.videos.filter((v) => v.status !== "unavailable");
   const gain = active.reduce((a, v) => a + (v.gain_24h || 0), 0);
   const recent = active.filter((v) => ageHours(v, now) < 24 * 7).length;
+  // 종류별 개수
+  const counts = {};
+  for (const v of active) counts[videoKind(v)] = (counts[videoKind(v)] || 0) + 1;
+  const kindNames = { video: "일반", clip: "클립", vod: "다시보기", short: "쇼츠" };
+  const kindNote = Object.keys(kindNames).filter((k) => counts[k]).map((k) => `${kindNames[k]} ${fmtInt.format(counts[k])}`).join(" · ");
+  // 최근 24시간 가장 많이 오른 영상
+  const top = active.reduce((a, v) => ((v.gain_24h || 0) > (a?.gain_24h || 0) ? v : a), null);
+  const lastUp = active.reduce((a, v) => (!a || v.published_at > a.published_at ? v : a), null);
   const tiles = [
-    ["구독자", state.channel.subscribers == null ? "–" : fmtCompact.format(state.channel.subscribers)],
-    ["추적 중인 영상", fmtInt.format(active.length)],
-    ["최근 24시간 조회수 증가", "+" + fmtInt.format(gain)],
-    ["최근 7일 업로드", fmtInt.format(recent)],
+    ["구독자", state.channel.subscribers == null ? "–" : fmtCompact.format(state.channel.subscribers),
+      state.channel.total_views == null ? "" : `채널 총 조회수 ${fmtCompact.format(state.channel.total_views)}`],
+    ["추적 중인 영상", fmtInt.format(active.length), kindNote],
+    ["최근 24시간 조회수 증가", "+" + fmtInt.format(gain),
+      top && top.gain_24h ? `최다 +${fmtInt.format(top.gain_24h)} · ${top.title}` : ""],
+    ["최근 7일 업로드", fmtInt.format(recent),
+      lastUp ? `마지막 업로드 ${fmtAgo(Date.now() - Date.parse(lastUp.published_at))}` : ""],
   ];
-  $("tiles").replaceChildren(...tiles.map(([l, v]) =>
-    el("div", { class: "tile" }, el("div", { class: "label", text: l }), el("div", { class: "value", text: v }))));
+  $("tiles").replaceChildren(...tiles.map(([l, v, note]) => el("div", { class: "tile" },
+    el("div", { class: "label", text: l }), el("div", { class: "value", text: v }),
+    el("div", { class: "note", text: note || "\u00a0", title: note || "" }))));
 }
 
 // ---------------------------------------------------------------- 표
@@ -493,14 +614,16 @@ function renderTable() {
       onclick: (e) => { e.stopPropagation(); toggleCmp(v.id); },
       onkeydown: (e) => e.stopPropagation(),
     }, dot, slot > N_COLORS ? lineKey(slot, 18) : null);
-    const title = el("span", { class: "t" }, document.createTextNode(v.title));
-    if (v.duration_s) title.append(el("span", { class: "badge", text: fmtDuration(v.duration_s) }));
-    if (v.is_short) title.append(el("span", { class: "badge", text: "쇼츠" }));
-    else if (state.split && videoKind(v) === "vod") title.append(el("span", { class: "badge", text: "다시보기" }));
-    if (v.is_live) title.append(el("span", { class: "badge", text: "라이브" }));
-    if (v.status === "unavailable") title.append(el("span", { class: "badge", text: "비공개/삭제" }));
-    else if (v.status === "upcoming") title.append(el("span", { class: "badge", text: "예정" }));
-    else if (ageHours(v, now) < earlyH) title.append(el("span", { class: "badge hot", text: "집중 수집" }));
+    const badges = el("div", { class: "badges" });
+    const badge = (text, cls = "") => badges.append(el("span", { class: "badge " + cls, text }));
+    if (v.duration_s) badge(fmtDuration(v.duration_s));
+    if (v.is_short) badge("쇼츠", "short");
+    else if (state.split && videoKind(v) === "vod") badge("다시보기", "vod");
+    if (v.is_live) badge("라이브");
+    if (v.status === "unavailable") badge("비공개/삭제", "off");
+    else if (v.status === "upcoming") badge("예정");
+    else if (ageHours(v, now) < earlyH) badge("집중 수집", "hot");
+    const title = el("div", {}, el("span", { class: "t", text: v.title }), badges);
     const thumb = el("img", { alt: "", loading: "lazy" });
     if (v.thumbnail) thumb.src = v.thumbnail;
     const gain = el("td", { class: "num" + (v.gain_24h > 0 ? " up" : ""), text: v.gain_24h == null ? "–" : "+" + fmtInt.format(v.gain_24h) });
@@ -533,7 +656,9 @@ function baseOptions({ xTitle, xTick, yTick = (v) => fmtCompact.format(v) }) {
       legend: { display: false },
       tooltip: {
         backgroundColor: css("--surface"), borderColor: css("--border"), borderWidth: 1,
-        titleColor: css("--ink-2"), bodyColor: css("--ink"), padding: 10, boxWidth: 14, boxHeight: 2,
+        titleColor: css("--ink-2"), bodyColor: css("--ink"), padding: 12, boxWidth: 14, boxHeight: 2,
+        cornerRadius: 10, caretSize: 0, bodySpacing: 4, boxPadding: 4,
+        titleFont: { weight: "600" }, bodyFont: { size: 12 },
         usePointStyle: false, itemSort: (a, b) => (b.parsed.y ?? -1) - (a.parsed.y ?? -1),
         filter: (item) => item.parsed.y != null && !item.dataset.isBand,
       },
@@ -625,6 +750,7 @@ async function renderCompare() {
     return {
       label: v.title, data: xs.map((x) => ({ x, y: interp(pts, x) })), baseColor: color,
       borderColor: color, backgroundColor: color, borderDash: slotDash(slot), borderWidth: 2, pointRadius: 0,
+      cubicInterpolationMode: "monotone",
       pointHoverRadius: 4, pointHoverBorderColor: css("--surface"), pointHoverBorderWidth: 2, spanGaps: false,
     };
   }));
@@ -735,8 +861,15 @@ async function renderDetail() {
   Object.assign(vOpts.scales.x, { min: xMin, max: xMax, afterBuildTicks: fixTicks });
   draw("d-views", { type: "line", options: vOpts, data: { datasets: [{
     label: "조회수", data: pts.map((p) => ({ x: xOf(p), y: p.views })),
-    borderColor: color, backgroundColor: color, borderWidth: 2,
-    pointRadius: pts.length > 60 ? 0 : 3, pointHoverRadius: 4, pointBorderColor: css("--surface"), pointBorderWidth: 1,
+    borderColor: color, borderWidth: 2, cubicInterpolationMode: "monotone", fill: "start",
+    backgroundColor: (c) => {  // 선 아래를 위에서 아래로 옅어지는 색으로 채운다
+      const { ctx, chartArea } = c.chart;
+      if (!chartArea) return "transparent";
+      const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+      g.addColorStop(0, color + "33"); g.addColorStop(1, color + "00");
+      return g;
+    },
+    pointRadius: pts.length > 60 ? 0 : 3, pointHoverRadius: 4, pointBackgroundColor: color, pointBorderColor: css("--surface"), pointBorderWidth: 1,
   }] } });
 
   // 구간 평균 증가 속도: 직전 수집 시각부터 이번 수집 시각까지 평균. 계단형으로 그린다.
@@ -872,6 +1005,8 @@ function switchChannel(key) {
 
 (async function init() {
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  // 웹폰트가 늦게 도착하면 차트 글꼴도 다시 그린다
+  if (document.fonts) document.fonts.ready.then(() => { if (state.channel) { renderCompare(); renderDetail(); } });
   try {
     state.channels = await loadJSON("data/channels.json");
   } catch (e) {
