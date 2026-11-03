@@ -145,14 +145,15 @@ input[type="search"]::placeholder { color: var(--muted); }
 .legend li { display: inline-flex; align-items: center; gap: 6px; max-width: 280px; cursor: pointer; border-radius: 6px; padding: 1px 6px; margin: 0 -6px; }
 .legend li:hover, .legend li:focus-visible { background: var(--hover); outline: none; }
 .legend li span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-th.cmp-head { padding: 6px 8px; }
+/* 비교 칸 폭을 고정해 머리글이 바뀌어도 표가 흔들리지 않게 한다 */
+th.cmp-head, td.cmp-cell { width: 56px; min-width: 56px; max-width: 56px; }
+th.cmp-head { padding: 0 12px; height: 41px; }
 button.cmp-clear {
-  display: inline-flex; align-items: center; gap: 5px; border: 0; cursor: pointer; white-space: nowrap;
-  background: var(--tint-red-bg); color: var(--tint-red); font-size: 12px; font-weight: 600; padding: 4px 9px 4px 5px; border-radius: 999px;
+  width: 22px; height: 22px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; background: var(--tint-red-bg); color: var(--tint-red);
+  font-size: 11px; font-weight: 700; line-height: 1; margin-left: -1px;
 }
-button.cmp-clear:hover { box-shadow: inset 0 0 0 1px currentColor; }
-button.cmp-clear .x { width: 16px; height: 16px; border-radius: 50%; background: var(--tint-red); color: var(--surface);
-  display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+button.cmp-clear:hover { background: var(--tint-red); color: var(--surface); }
 .line-key { flex: none; display: block; }
 .base-key { width: 16px; height: 10px; border-radius: 2px; flex: none; background: var(--band); border-top: 2px solid var(--muted); }
 details.help { margin-top: 12px; color: var(--ink-2); font-size: 12.5px; }
@@ -799,8 +800,8 @@ async function renderCompare() {
   }, lineKey(slot), el("span", { text: v.title }))));
   // 표의 '비교' 머리글: 선택된 영상이 있으면 '전체 취소' 버튼으로 바뀐다
   $("cmp-head").replaceChildren(entries.length
-    ? el("button", { class: "cmp-clear", title: "비교 중인 영상을 모두 뺍니다", onclick: () => pickRecent(0) },
-        el("span", { class: "x", text: "✕" }), `전체 취소 ${entries.length}`)
+    ? el("button", { class: "cmp-clear", title: `비교 전체 취소 (${entries.length}개)`,
+        "aria-label": `비교 전체 취소 (${entries.length}개)`, onclick: () => pickRecent(0), text: "✕" })
     : "비교");
   if (state.showBase) {
     const li = showBand
