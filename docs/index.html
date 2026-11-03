@@ -26,6 +26,7 @@ try {
   --hover: rgba(11,11,11,0.04);
   --accent: #2a78d6;
   --up: #006300;
+  --band: rgba(137,135,129,0.22);   /* 평소 범위(25~75%) 띠 */
   /* 비교 차트 색: 무지개 순서 10색 (빨·주·노·연두·초록·청록·하늘·파랑·남색·보라) */
   --s1: #e03131; --s2: #f76707; --s3: #e0a800; --s4: #74b816; --s5: #2b8a3e;
   --s6: #0ca678; --s7: #1c9ad6; --s8: #1c5fd6; --s9: #4c3fc4; --s10: #9c36b5;
@@ -127,6 +128,9 @@ button.cmp-btn:hover { background: var(--hover); }
 .line-key { flex: none; display: block; }
 .legend li { cursor: pointer; border-radius: 4px; padding: 0 4px; margin: 0 -4px; }
 .legend li:hover, .legend li:focus-visible { background: var(--hover); outline: none; }
+body.base-off .col-base { display: none; }
+.base-key { width: 16px; height: 10px; border-radius: 2px; flex: none; background: var(--band); border-top: 2px solid var(--muted); }
+.muted-num { color: var(--muted); font-size: 11px; }
 .cmp-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 button.link { border: 0; background: none; color: var(--accent); cursor: pointer; font: inherit; padding: 0; }
 .empty { padding: 40px 16px; text-align: center; color: var(--ink-2); }
@@ -174,6 +178,7 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
             <button data-v="30">최근 30개</button>
             <button data-v="0">모두 해제</button>
           </div>
+          <div class="seg"><button id="base-toggle" aria-pressed="true" title="이 채널 영상들의 평소 추이(중간값과 25~75% 범위)를 함께 표시">평소 범위</button></div>
           <div class="seg" id="cmp-axis" role="group" aria-label="가로축 기준">
             <button data-v="age" aria-pressed="true" title="모든 영상을 업로드 순간에서 시작">업로드 시점</button>
             <button data-v="clock" aria-pressed="false" title="업로드한 날 0시를 맞추고, 업로드 시각만큼 오른쪽에서 시작">업로드 날 시각</button>
@@ -187,7 +192,7 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
       </div>
       <ul class="legend" id="cmp-legend"></ul>
       <div class="chart-box"><canvas id="cmp-chart" aria-label="영상별 업로드 후 조회수 비교 차트"></canvas></div>
-      <p class="muted" style="font-size:12px;margin:8px 0 0">아래 표의 비교 칸(○)을 눌러 비교할 영상을 넣고 뺄 수 있습니다 (최대 30개). 범례에 마우스를 올리면 그 선만 강조되고, 누르면 비교에서 빠집니다. 10개가 넘으면 같은 무지개 색이 점선, 20개가 넘으면 짧은 점선으로 반복됩니다. '업로드 날 시각'을 고르면 업로드한 날의 0시(한국 시간)를 같은 위치에 맞춰서, 12시에 올린 영상은 12시 자리에서, 15시에 올린 영상은 15시 자리에서 선이 시작합니다. 수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</p>
+      <p class="muted" style="font-size:12px;margin:8px 0 0">아래 표의 비교 칸(○)을 눌러 비교할 영상을 넣고 뺄 수 있습니다 (최대 30개). 범례에 마우스를 올리면 그 선만 강조되고, 누르면 비교에서 빠집니다. 10개가 넘으면 같은 무지개 색이 점선, 20개가 넘으면 짧은 점선으로 반복됩니다. '업로드 날 시각'을 고르면 업로드한 날의 0시(한국 시간)를 같은 위치에 맞춰서, 12시에 올린 영상은 12시 자리에서, 15시에 올린 영상은 15시 자리에서 선이 시작합니다. '평소 범위'는 업로드 직후부터 추적한 같은 종류 영상들의 조회수 중간값(회색 선)과 25~75% 구간(회색 띠)입니다. 표의 '평소 대비'는 업로드 24시간 후 조회수가 그 중간값의 몇 배인지이고, 24시간이 안 된 영상은 지금까지 경과 시간 기준입니다. 수집을 시작하기 전에 올라온 영상은 수집 시작 시점부터 선이 그려집니다.</p>
     </section>
 
     <section class="card" id="detail" hidden>
@@ -235,6 +240,7 @@ footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
               <th class="num" data-sort="gain_24h">최근 24시간</th>
               <th class="num" data-sort="views_24h_after">업로드 24시간 후</th>
               <th class="num" data-sort="views_7d_after">업로드 7일 후</th>
+              <th class="num col-base" data-sort="vs_base" title="업로드 24시간 후 조회수 ÷ 평소 중간값 (24시간 전이면 현재 경과 시간 기준)">평소 대비</th>
             </tr>
           </thead>
           <tbody id="rows"></tbody>
@@ -308,6 +314,8 @@ const state = {
   type: "all", q: "", sort: "published_at", desc: true,
   cmp: new Map(),          // videoId -> 색상 슬롯(1~8). 선택이 바뀌어도 기존 영상 색은 유지한다.
   range: 168, selected: null, axis: "time",
+  baseline: null,          // 채널별 평소 추이 (baseline.json)
+  showBase: (() => { try { return localStorage.getItem("baseline") !== "off"; } catch (e) { return true; } })(),
   cmpAxis: "age",          // 비교 차트 가로축: age = 업로드 후 경과, clock = 업로드한 날 0시 기준
   channels: [], key: null, base: "data/",
   limit: 100,              // 표에 보여줄 행 수 ("더 보기"로 늘어남)
@@ -411,10 +419,52 @@ function renderTiles() {
 }
 
 // ---------------------------------------------------------------- 표
+// ---------------------------------------------------------------- 평소 대비
+function baseKindFor(type) { return type === "all" ? "all" : type; }
+function baselineAt(kind, h) {
+  const b = state.baseline, k = b && b.kinds[kind];
+  if (!k || h < 0) return null;
+  const g = b.grid;
+  for (let i = 1; i < g.length; i++) {
+    if (h <= g[i]) {
+      const a = k.p50[i - 1], c = k.p50[i];
+      if (a == null || c == null) return null;
+      return a + (c - a) * (h - g[i - 1]) / (g[i] - g[i - 1]);
+    }
+  }
+  return null;
+}
+// { ratio, hours }: 24시간 후 조회수(없으면 지금까지)를 같은 종류 영상의 같은 시점 중간값과 비교
+function vsBase(v) {
+  if (!state.baseline || !v.latest || v.status === "unavailable") return null;
+  const kind = videoKind(v);
+  if (v.views_24h_after != null) {
+    const m = baselineAt(kind, 24);
+    return m > 0 ? { ratio: v.views_24h_after / m, hours: 24 } : null;
+  }
+  const age = ageHours(v, Date.parse(state.channel.last_run_at));
+  if (age < 1 || age >= 24 || !v.last_collected_at) return null;
+  const h = ageHours(v, Date.parse(v.last_collected_at));
+  const m = baselineAt(kind, h);
+  return m > 0 ? { ratio: v.latest.views / m, hours: h } : null;
+}
 function sortVal(v, key) {
+  if (key === "vs_base") { const r = vsBase(v); return r ? r.ratio : null; }
   if (key === "views") return v.latest ? v.latest.views : null;
   if (key === "published_at") return Date.parse(v.published_at);
   return v[key];
+}
+function baseCell(v) {
+  const td = el("td", { class: "num col-base" });
+  const r = vsBase(v);
+  if (!r) { td.textContent = "–"; return td; }
+  td.textContent = `${r.ratio >= 10 ? Math.round(r.ratio) : r.ratio.toFixed(1)}배`;
+  if (r.ratio >= 1) td.classList.add("up");
+  if (r.hours < 24) {
+    td.append(" ", el("span", { class: "muted-num", text: `(${Math.round(r.hours)}시간)` }));
+    td.title = `업로드 후 ${Math.round(r.hours)}시간 시점 기준 (아직 24시간 전)`;
+  }
+  return td;
 }
 function renderTable() {
   const list = filtered().slice().sort((a, b) => {
@@ -463,6 +513,7 @@ function renderTable() {
       gain,
       el("td", { class: "num", text: n(v.views_24h_after) }),
       el("td", { class: "num", text: n(v.views_7d_after) }),
+      baseCell(v),
     );
     return tr;
   }));
@@ -484,7 +535,7 @@ function baseOptions({ xTitle, xTick, yTick = (v) => fmtCompact.format(v) }) {
         backgroundColor: css("--surface"), borderColor: css("--border"), borderWidth: 1,
         titleColor: css("--ink-2"), bodyColor: css("--ink"), padding: 10, boxWidth: 14, boxHeight: 2,
         usePointStyle: false, itemSort: (a, b) => (b.parsed.y ?? -1) - (a.parsed.y ?? -1),
-        filter: (item) => item.parsed.y != null,
+        filter: (item) => item.parsed.y != null && !item.dataset.isBand,
       },
     },
     scales: {
@@ -577,10 +628,28 @@ async function renderCompare() {
       pointHoverRadius: 4, pointHoverBorderColor: css("--surface"), pointHoverBorderWidth: 2, spanGaps: false,
     };
   }));
+  // 평소 범위: 같은 종류 영상들의 중간값 선 + 25~75% 띠 (업로드 시점 기준에서만)
+  const bKind = baseKindFor(state.type);
+  const bk = state.baseline && state.baseline.kinds[bKind];
+  const showBand = state.showBase && !clock && bk;
+  if (showBand) {
+    const idx = new Map(state.baseline.grid.map((h, i) => [h, i]));
+    const pick = (arr) => xs.map((x) => ({ x, y: idx.has(x) ? arr[idx.get(x)] : null }));
+    const muted = css("--muted"), band = css("--band");
+    datasets.push(
+      { label: "평소 상위 25%", data: pick(bk.p75), isBase: true, isBand: true, fill: "+1", backgroundColor: band,
+        borderWidth: 0, pointRadius: 0, pointHoverRadius: 0, order: 100 },
+      { label: "평소 하위 25%", data: pick(bk.p25), isBase: true, isBand: true, fill: false,
+        borderWidth: 0, pointRadius: 0, pointHoverRadius: 0, order: 100 },
+      { label: `평소 (중간값, 영상 ${bk.videos}개)`, data: pick(bk.p50), isBase: true, borderColor: muted, backgroundColor: muted,
+        borderWidth: 2, pointRadius: 0, pointHoverRadius: 3, order: 99 },
+    );
+  }
   // 범례에 올리면 그 선만 강조하고 나머지는 흐리게, 누르면 비교에서 뺀다.
   const highlight = (idx) => {
     const chart = charts["cmp-chart"]; if (!chart) return;
     chart.data.datasets.forEach((ds, i) => {
+      if (ds.isBase) return;
       const dim = idx != null && i !== idx;
       ds.borderColor = dim ? ds.baseColor + "26" : ds.baseColor;
       ds.borderWidth = idx === i ? 3 : 2;
@@ -594,6 +663,16 @@ async function renderCompare() {
     onclick: () => toggleCmp(v.id),
     onkeydown: (e) => { if (e.key === "Enter") toggleCmp(v.id); },
   }, lineKey(slot), el("span", { text: v.title }))));
+  if (state.showBase) {
+    const li = showBand
+      ? el("li", { title: "업로드 직후부터 추적한 같은 종류 영상들의 중간값과 25~75% 범위", style: "cursor:default" },
+          el("span", { class: "base-key" }), el("span", { text: `평소 범위 (영상 ${bk.videos}개)` }))
+      : el("li", { style: "cursor:default" }, el("span", { class: "muted-num",
+          text: clock ? "평소 범위는 '업로드 시점' 기준에서만 표시됩니다"
+            : !state.baseline ? "평소 범위는 다음 정각 수집 후 표시됩니다"
+            : "이 종류는 평소 범위를 계산할 영상이 아직 부족합니다" }));
+    $("cmp-legend").append(li);
+  }
   const opts = clock
     ? baseOptions({ xTitle: "업로드한 날부터 (한국 시간)", xTick: clockTick })
     : baseOptions({ xTitle: "업로드 후 경과 시간", xTick: ageTick });
@@ -608,7 +687,7 @@ async function renderCompare() {
     label: (item) => ` ${fmtInt.format(item.parsed.y)}  ${item.dataset.label.slice(0, 30)}`,
   };
   // 비교 영상이 많으면 툴팁이 잘리지 않도록 차트를 키운다.
-  $("cmp-chart").parentElement.style.height = `${320 + Math.max(0, datasets.length - 12) * 18}px`;
+  $("cmp-chart").parentElement.style.height = `${320 + Math.max(0, entries.length - 12) * 18}px`;
   draw("cmp-chart", { type: "line", data: { datasets }, options: opts });
 }
 
@@ -709,6 +788,18 @@ function segment(id, onChange) {
 segment("type-filter", (v) => { state.type = v; state.limit = PAGE; defaultCmp(); renderTable(); renderCompare(); });
 segment("cmp-range", (v) => { state.range = +v; renderCompare(); });
 segment("cmp-axis", (v) => { state.cmpAxis = v; renderCompare(); });
+// 평소 범위 켜기/끄기: 비교 차트의 회색 띠와 표의 '평소 대비' 칸을 함께 켜고 끈다. 선택은 브라우저에 기억한다.
+function applyBaseToggle() {
+  $("base-toggle").setAttribute("aria-pressed", String(state.showBase));
+  document.body.classList.toggle("base-off", !state.showBase);
+}
+$("base-toggle").addEventListener("click", () => {
+  state.showBase = !state.showBase;
+  try { localStorage.setItem("baseline", state.showBase ? "on" : "off"); } catch (e) {}
+  applyBaseToggle();
+  if (state.channel) renderCompare();
+});
+applyBaseToggle();
 $("cmp-pick").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) pickRecent(+b.dataset.v); });
 segment("d-axis", (v) => { state.axis = v; renderDetail(); });
 $("q").addEventListener("input", (e) => { state.q = e.target.value; state.limit = PAGE; renderTable(); });
@@ -763,6 +854,7 @@ async function loadChannel(key) {
   } catch (e) {
     state.videos = [];
   }
+  state.baseline = await loadJSON(state.base + "baseline.json").catch(() => null);
   if (state.key !== key) return;  // 그 사이 다른 채널을 눌렀으면 버린다
   $("app").style.opacity = "";
   state.byId = new Map(state.videos.map((v) => [v.id, v]));

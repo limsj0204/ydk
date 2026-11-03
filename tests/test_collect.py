@@ -197,6 +197,36 @@ class CollectTest(unittest.TestCase):
         self.assertEqual([c["key"] for c in index], ["test", "other"])
 
 
+    def test_baseline(self):
+        # 업로드 직후부터 추적한 영상 3개 + 늦게 추적 시작한 영상 1개(old1, 제외 대상)
+        for vid in ("new1", "short1"):
+            self.api.published[vid] = T0 - timedelta(minutes=30)
+        self.api.views["new2"], self.api.published["new2"] = 0, T0 - timedelta(minutes=30)
+        for h in range(0, 5):
+            for i, vid in enumerate(("new1", "new2", "short1")):
+                self.api.views[vid] = (i + 1) * 100 * h
+            collect.run(self.api, CFG, T0 + timedelta(hours=h))
+        b = json.loads((self.d / "baseline.json").read_text())
+        allk = b["kinds"]["all"]
+        self.assertEqual(allk["videos"], 3)  # old1은 30일 전 업로드라 제외
+        i2 = b["grid"].index(2)
+        # 업로드 후 2시간 = T0+1.5h 시점: 각 영상 150, 300, 450 → 중간값 300
+        self.assertEqual(allk["p50"][i2], 300)
+        self.assertEqual(allk["count"][i2], 3)
+        self.assertIsNone(allk["p50"][b["grid"].index(10)])  # 아직 데이터 없는 구간
+        self.assertEqual(b["kinds"]["video"]["videos"], 2)
+        self.assertEqual(b["kinds"]["short"]["videos"], 1)
+        self.assertIsNone(b["kinds"]["short"]["p50"][i2])  # 3개 미만이면 비움
+
+    def test_video_kind_split(self):
+        cfg = {"split_minutes": 20}
+        self.assertEqual(collect.video_kind({"duration_s": 300}, cfg), "clip")
+        self.assertEqual(collect.video_kind({"duration_s": 3600}, cfg), "vod")
+        self.assertEqual(collect.video_kind({"duration_s": 0, "is_live": True}, cfg), "vod")
+        self.assertEqual(collect.video_kind({"is_short": True, "duration_s": 30}, cfg), "short")
+        self.assertEqual(collect.video_kind({"duration_s": 3600}, {}), "video")
+
+
 class HelpersTest(unittest.TestCase):
     def test_channel_configs(self):
         cfg = {"early_days": 7, "channels": [{"key": "a"}, {"key": "b", "early_days": 3}]}

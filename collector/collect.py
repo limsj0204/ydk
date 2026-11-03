@@ -215,6 +215,67 @@ def derived_metrics(d: Path, video: dict) -> dict:
     }
 
 
+# ---------------------------------------------------------------- 평소 추이(기준선)
+
+# 대시보드 비교 차트와 같은 격자: 7일까지 1시간, 그 뒤 30일까지 12시간 간격 (업로드 후 경과 시간)
+BASELINE_GRID = list(range(0, 169)) + list(range(180, 721, 12))
+BASELINE_MIN_VIDEOS = 3          # 이보다 적은 영상만 있는 지점은 기준선을 비운다
+BASELINE_MAX_START_HOURS = 2     # 업로드 후 이 시간 안에 수집을 시작한 영상만 기준선에 쓴다
+
+
+def video_kind(v: dict, cfg: dict) -> str:
+    """대시보드의 videoKind()와 같은 규칙: short / clip·vod(split_minutes 채널) / video."""
+    if v.get("is_short"):
+        return "short"
+    split = cfg.get("split_minutes")
+    if not split:
+        return "video"
+    dur = v.get("duration_s") or 0
+    if not dur:
+        return "vod" if v.get("is_live") else "clip"
+    return "vod" if dur >= split * 60 else "clip"
+
+
+def percentile(sorted_vals: list[int], q: float) -> int:
+    """선형 보간 백분위수 (sorted_vals는 오름차순)."""
+    pos = (len(sorted_vals) - 1) * q
+    lo = int(pos)
+    hi = min(lo + 1, len(sorted_vals) - 1)
+    return round(sorted_vals[lo] + (sorted_vals[hi] - sorted_vals[lo]) * (pos - lo))
+
+
+def compute_baseline(d: Path, videos: list[dict], cfg: dict, now: datetime) -> dict:
+    """영상 종류별로 '업로드 후 h시간 시점 조회수'의 25/50/75 백분위수를 구한다.
+
+    업로드 직후부터 추적한 영상만 쓰고, 업로드 순간의 조회수는 0으로 본다.
+    """
+    samples: dict[str, list[list[int | None]]] = {}
+    for v in videos:
+        if v.get("status") == "unavailable" or "published_at" not in v:
+            continue
+        series = read_snapshots(d, v["id"])
+        pub = parse_time(v["published_at"])
+        if not series or series[0][0] - pub > timedelta(hours=BASELINE_MAX_START_HOURS):
+            continue
+        if series[0][0] > pub:
+            series = [(pub, 0)] + series
+        row = [interpolate(series, pub + timedelta(hours=h)) for h in BASELINE_GRID]
+        for kind in ("all", video_kind(v, cfg)):
+            samples.setdefault(kind, []).append(row)
+
+    kinds = {}
+    for kind, rows in samples.items():
+        out = {"videos": len(rows), "count": [], "p25": [], "p50": [], "p75": []}
+        for i in range(len(BASELINE_GRID)):
+            vals = sorted(r[i] for r in rows if r[i] is not None)
+            out["count"].append(len(vals))
+            enough = len(vals) >= BASELINE_MIN_VIDEOS
+            for key, q in (("p25", 0.25), ("p50", 0.5), ("p75", 0.75)):
+                out[key].append(percentile(vals, q) if enough else None)
+        kinds[kind] = out
+    return {"updated_at": fmt_time(now), "grid": BASELINE_GRID, "min_videos": BASELINE_MIN_VIDEOS, "kinds": kinds}
+
+
 def resolve_channel(api: YouTubeAPI, cfg: dict, channel: dict) -> dict:
     handle = cfg["channel_handle"]
     if cfg.get("channel_id"):
@@ -370,6 +431,10 @@ def run(api: YouTubeAPI, cfg: dict, now: datetime) -> dict:
     }
     save_json(d / "channel.json", channel)
     save_json(d / "videos.json", ordered)
+    # 기준선은 숫자 배열뿐이라 한 줄로 저장해 커밋 diff를 줄인다.
+    (d / "baseline.json").write_text(
+        json.dumps(compute_baseline(d, ordered, cfg, now), separators=(",", ":")) + "\n", encoding="utf-8"
+    )
 
     summary = {
         "full_scan": full,
