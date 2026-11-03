@@ -1,5 +1,26 @@
 [
  {
+  "id": "3uNs74Reu5U",
+  "first_seen_at": "2026-11-03T06:00:34Z",
+  "title": "아, 함박쿤! 지금 가고있어💦 #shorts",
+  "published_at": "2026-11-03T05:22:35Z",
+  "thumbnail": "https://i.ytimg.com/vi/3uNs74Reu5U/mqdefault.jpg",
+  "duration_s": 9,
+  "is_short": true,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-11-03T06:00:34Z",
+  "latest": {
+   "views": 552,
+   "likes": 74,
+   "comments": 9
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "Lhmsgd8tmoI",
   "first_seen_at": "2026-11-02T10:00:37Z",
   "title": "자칭 웹툰 고수(?)들의 네이버 웹툰🏆티어리스트 w.타요 도현",
@@ -9,16 +30,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-03T05:00:38Z",
+  "last_collected_at": "2026-11-03T06:00:34Z",
   "latest": {
-   "views": 7681,
-   "likes": 119,
+   "views": 7860,
+   "likes": 120,
    "comments": 20
   },
   "views_24h_after": null,
   "views_7d_after": null,
   "gain_24h": null,
-  "snapshots": 19
+  "snapshots": 20
  },
  {
   "id": "f1eGsi8G_3o",
@@ -30,16 +51,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-03T05:00:38Z",
+  "last_collected_at": "2026-11-03T06:00:34Z",
   "latest": {
-   "views": 26265,
-   "likes": 321,
+   "views": 26507,
+   "likes": 322,
    "comments": 36
   },
   "views_24h_after": 11198,
   "views_7d_after": null,
-  "gain_24h": 4908,
-  "snapshots": 138
+  "gain_24h": 4950,
+  "snapshots": 139
  },
  {
   "id": "Nhgm1yifAbo",
