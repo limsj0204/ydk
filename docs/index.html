@@ -442,14 +442,27 @@ function el(tag, props = {}, ...children) {
 }
 
 // ---------------------------------------------------------------- 데이터
+// 데이터는 GitHub 저장소 원본(raw)에서 바로 읽는다. 수집 커밋이 올라오면 몇 분 안에 반영되고,
+// GitHub Pages 배포가 늦거나 실패해도 영향을 받지 않는다. 원본을 못 읽으면 Pages에 올라간 사본을 쓴다.
+const RAW_ROOT = "https://raw.githubusercontent.com/limsj0204/ydk/main/docs/";
+const USE_RAW = location.hostname.endsWith("github.io");
+async function fetchData(path) {
+  if (USE_RAW) {
+    try {
+      const r = await fetch(RAW_ROOT + path, { cache: "no-cache" });
+      if (r.ok) return r;
+    } catch (e) { /* 아래 사본으로 */ }
+  }
+  return fetch(path, { cache: "no-cache" });
+}
 async function loadJSON(path) {
-  const r = await fetch(path, { cache: "no-cache" });
+  const r = await fetchData(path);
   if (!r.ok) throw new Error(path + " " + r.status);
   return r.json();
 }
 function loadSeries(id) {
   if (!series.has(id)) {
-    series.set(id, fetch(`${state.base}snapshots/${id}.csv`, { cache: "no-cache" })
+    series.set(id, fetchData(`${state.base}snapshots/${id}.csv`)
       .then((r) => (r.ok ? r.text() : ""))
       .then((text) => text.trim().split("\n").slice(1).filter(Boolean).map((line) => {
         const [t, views, likes, comments] = line.split(",");
