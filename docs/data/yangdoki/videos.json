@@ -1,5 +1,26 @@
 [
  {
+  "id": "2Z1-AoZm1Es",
+  "first_seen_at": "2026-11-06T06:00:35Z",
+  "title": "냥🐱 #shorts",
+  "published_at": "2026-11-06T05:22:07Z",
+  "thumbnail": "https://i.ytimg.com/vi/2Z1-AoZm1Es/mqdefault.jpg",
+  "duration_s": 13,
+  "is_short": true,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-11-06T06:00:35Z",
+  "latest": {
+   "views": 444,
+   "likes": 113,
+   "comments": 10
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "3uNs74Reu5U",
   "first_seen_at": "2026-11-03T06:00:34Z",
   "title": "아, 함박쿤! 지금 가고있어💦 #shorts",
@@ -9,16 +30,16 @@
   "is_short": true,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-06T05:00:38Z",
+  "last_collected_at": "2026-11-06T06:00:35Z",
   "latest": {
-   "views": 6510,
-   "likes": 508,
+   "views": 6533,
+   "likes": 513,
    "comments": 29
   },
   "views_24h_after": 5547,
   "views_7d_after": null,
-  "gain_24h": 277,
-  "snapshots": 72
+  "gain_24h": 300,
+  "snapshots": 73
  },
  {
   "id": "Lhmsgd8tmoI",
@@ -30,16 +51,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-06T05:00:38Z",
+  "last_collected_at": "2026-11-06T06:00:35Z",
   "latest": {
-   "views": 23008,
-   "likes": 190,
+   "views": 23073,
+   "likes": 191,
    "comments": 32
   },
   "views_24h_after": 8615,
   "views_7d_after": null,
-  "gain_24h": 4033,
-  "snapshots": 91
+  "gain_24h": 4021,
+  "snapshots": 92
  },
  {
   "id": "f1eGsi8G_3o",
