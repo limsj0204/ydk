@@ -1,24 +1,45 @@
 [
  {
+  "id": "13Wrr6AYrKw",
+  "first_seen_at": "2026-11-14T09:00:34Z",
+  "title": "실루엣 1차 공개! ▼관련 동영상에 ♥️를 눌러주세요!",
+  "published_at": "2026-11-14T08:30:15Z",
+  "thumbnail": "https://i.ytimg.com/vi/13Wrr6AYrKw/mqdefault.jpg",
+  "duration_s": 18,
+  "is_short": true,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-11-14T09:00:34Z",
+  "latest": {
+   "views": 1197,
+   "likes": 162,
+   "comments": 12
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "9K7OAP9_y3g",
   "first_seen_at": "2026-11-14T06:00:34Z",
-  "title": "♥️를 주면... 뉴양도끼 실루엣이 공개됩니다❗",
+  "title": "♥️를 누르면 뉴아바타 실루엣이 공개됩니다❗",
   "published_at": "2026-11-14T05:22:03Z",
   "thumbnail": "https://i.ytimg.com/vi/9K7OAP9_y3g/mqdefault.jpg",
   "duration_s": 18,
   "is_short": true,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-14T08:00:35Z",
+  "last_collected_at": "2026-11-14T09:00:34Z",
   "latest": {
-   "views": 2790,
-   "likes": 511,
-   "comments": 28
+   "views": 4127,
+   "likes": 742,
+   "comments": 33
   },
   "views_24h_after": null,
   "views_7d_after": null,
   "gain_24h": null,
-  "snapshots": 3
+  "snapshots": 4
  },
  {
   "id": "KmKFRAKBFME",
@@ -30,16 +51,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-14T08:00:35Z",
+  "last_collected_at": "2026-11-14T09:00:34Z",
   "latest": {
-   "views": 13587,
-   "likes": 177,
+   "views": 13870,
+   "likes": 181,
    "comments": 34
   },
   "views_24h_after": 8572,
   "views_7d_after": null,
-  "gain_24h": 5014,
-  "snapshots": 49
+  "gain_24h": 5053,
+  "snapshots": 50
  },
  {
   "id": "2Z1-AoZm1Es",
