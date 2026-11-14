@@ -1,5 +1,26 @@
 [
  {
+  "id": "9K7OAP9_y3g",
+  "first_seen_at": "2026-11-14T06:00:34Z",
+  "title": "♥️를 주면... 뉴양도끼 실루엣이 공개됩니다❗",
+  "published_at": "2026-11-14T05:22:03Z",
+  "thumbnail": "https://i.ytimg.com/vi/9K7OAP9_y3g/mqdefault.jpg",
+  "duration_s": 18,
+  "is_short": true,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-11-14T06:00:34Z",
+  "latest": {
+   "views": 1441,
+   "likes": 215,
+   "comments": 20
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "KmKFRAKBFME",
   "first_seen_at": "2026-11-12T08:00:34Z",
   "title": "기대받고 있는 신작 서브컬쳐 게임 캐릭터 퀄리티가 ㄷㄷ",
@@ -9,16 +30,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-14T05:00:36Z",
+  "last_collected_at": "2026-11-14T06:00:34Z",
   "latest": {
-   "views": 12819,
-   "likes": 173,
-   "comments": 33
+   "views": 13011,
+   "likes": 174,
+   "comments": 34
   },
   "views_24h_after": 8572,
   "views_7d_after": null,
-  "gain_24h": 4840,
-  "snapshots": 46
+  "gain_24h": 4887,
+  "snapshots": 47
  },
  {
   "id": "2Z1-AoZm1Es",
