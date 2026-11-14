@@ -1,5 +1,26 @@
 [
  {
+  "id": "OOam8dp9OhI",
+  "first_seen_at": "2026-11-14T10:00:32Z",
+  "title": "실루엣 2차 공개! ▼관련 동영상에 ♥️를 눌러주세요!",
+  "published_at": "2026-11-14T10:00:17Z",
+  "thumbnail": "https://i.ytimg.com/vi/OOam8dp9OhI/mqdefault.jpg",
+  "duration_s": 18,
+  "is_short": true,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-11-14T10:00:32Z",
+  "latest": {
+   "views": 0,
+   "likes": 0,
+   "comments": 0
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "13Wrr6AYrKw",
   "first_seen_at": "2026-11-14T09:00:34Z",
   "title": "실루엣 1차 공개! ▼관련 동영상에 ♥️를 눌러주세요!",
@@ -9,16 +30,16 @@
   "is_short": true,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-14T09:00:34Z",
+  "last_collected_at": "2026-11-14T10:00:32Z",
   "latest": {
-   "views": 1197,
-   "likes": 162,
-   "comments": 12
+   "views": 1883,
+   "likes": 324,
+   "comments": 18
   },
   "views_24h_after": null,
   "views_7d_after": null,
   "gain_24h": null,
-  "snapshots": 1
+  "snapshots": 2
  },
  {
   "id": "9K7OAP9_y3g",
@@ -30,16 +51,16 @@
   "is_short": true,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-14T09:00:34Z",
+  "last_collected_at": "2026-11-14T10:00:32Z",
   "latest": {
-   "views": 4127,
-   "likes": 742,
-   "comments": 33
+   "views": 5018,
+   "likes": 1227,
+   "comments": 42
   },
   "views_24h_after": null,
   "views_7d_after": null,
   "gain_24h": null,
-  "snapshots": 4
+  "snapshots": 5
  },
  {
   "id": "KmKFRAKBFME",
@@ -51,16 +72,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-14T09:00:34Z",
+  "last_collected_at": "2026-11-14T10:00:32Z",
   "latest": {
-   "views": 13870,
-   "likes": 181,
+   "views": 14150,
+   "likes": 182,
    "comments": 34
   },
   "views_24h_after": 8572,
   "views_7d_after": null,
-  "gain_24h": 5053,
-  "snapshots": 50
+  "gain_24h": 4975,
+  "snapshots": 51
  },
  {
   "id": "2Z1-AoZm1Es",
