@@ -137,6 +137,16 @@ input[type="search"]::placeholder { color: var(--muted); }
 .card h2 a { color: inherit; text-decoration: none; }
 .card h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .card-sub { color: var(--muted); font-size: 12.5px; margin: 2px 0 0; }
+.range-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.range-custom { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 10px; background: var(--seg-track); }
+.range-custom input, .range-custom select {
+  border: 0; border-radius: 7px; background: var(--seg-on); color: var(--ink); box-shadow: var(--shadow-on);
+  height: 28px; padding: 0 8px; font-weight: 600;
+}
+.range-custom input { width: 4.2em; text-align: right; -moz-appearance: textfield; }
+.range-custom input::-webkit-inner-spin-button, .range-custom input::-webkit-outer-spin-button { opacity: 0.4; }
+.range-custom select { background: transparent; box-shadow: none; color: var(--ink-2); font-weight: 500; padding: 0 4px; cursor: pointer; }
+.range-custom.on { box-shadow: inset 0 0 0 1.5px var(--accent); }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
 .toolbar .spacer { flex: 1; }
 .chart-box { position: relative; height: 340px; }
@@ -255,10 +265,19 @@ footer a { color: inherit; }
           <h2>업로드 후 조회수 비교</h2>
           <p class="card-sub">영상들의 조회수 흐름을 같은 출발선에서 겹쳐 봅니다</p>
         </div>
-        <div class="seg" id="cmp-range" role="group" aria-label="비교 구간">
-          <button data-v="48" aria-pressed="false">48시간</button>
-          <button data-v="168" aria-pressed="true">7일</button>
-          <button data-v="720" aria-pressed="false">30일</button>
+        <div class="range-tools">
+          <div class="seg" id="cmp-range" role="group" aria-label="비교 구간">
+            <button data-v="48" aria-pressed="false">48시간</button>
+            <button data-v="168" aria-pressed="true">7일</button>
+            <button data-v="720" aria-pressed="false">30일</button>
+          </div>
+          <label class="range-custom" id="range-custom" title="비교 구간을 직접 입력 (1시간 ~ 365일)">
+            <input type="number" id="range-n" min="1" max="999" step="1" value="7" inputmode="numeric" aria-label="비교 구간 숫자">
+            <select id="range-u" aria-label="비교 구간 단위">
+              <option value="1">시간</option>
+              <option value="24" selected>일</option>
+            </select>
+          </label>
         </div>
       </div>
       <div class="toolbar">
@@ -830,7 +849,8 @@ async function renderCompare() {
     ? baseOptions({ xTitle: "업로드한 날부터 (한국 시간)", xTick: clockTick })
     : baseOptions({ xTitle: "업로드 후 경과 시간", xTick: ageTick });
   opts.scales.x.min = 0; opts.scales.x.max = xMax;
-  opts.scales.x.ticks.stepSize = state.range <= 48 ? 6 : state.range <= 168 ? 24 : 120;
+  // 눈금 간격: 구간 길이에 맞춰 10개 안팎이 되도록 (1시간 ~ 30일)
+  opts.scales.x.ticks.stepSize = [1, 2, 3, 6, 12, 24, 48, 72, 120, 168, 336, 720].find((st) => xMax / st <= 10) || 720;
   if (clock) {
     // 날짜가 바뀌는 0시마다 옅은 세로선
     opts.scales.x.grid = { display: true, drawTicks: false, color: (c) => (c.tick && c.tick.value % 24 === 0 ? css("--grid") : "transparent") };
@@ -955,7 +975,26 @@ function segment(id, onChange) {
   });
 }
 segment("type-filter", (v) => { state.type = v; state.limit = PAGE; defaultCmp(); renderTable(); renderCompare(); });
-segment("cmp-range", (v) => { state.range = +v; renderCompare(); });
+// 비교 구간: 버튼(48시간·7일·30일) 또는 직접 입력. 입력칸은 항상 현재 구간을 보여준다.
+function showRangeInput() {
+  const h = state.range, byDay = h % 24 === 0;
+  $("range-n").value = byDay ? h / 24 : h;
+  $("range-u").value = byDay ? "24" : "1";
+  const preset = [...$("cmp-range").querySelectorAll("button")].some((b) => +b.dataset.v === h);
+  $("range-custom").classList.toggle("on", !preset);
+  $("cmp-range").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.v === h)));
+}
+function applyRangeInput() {
+  const n = Math.floor(+$("range-n").value), unit = +$("range-u").value;
+  if (!(n >= 1)) return;
+  state.range = Math.min(Math.max(n * unit, 1), 365 * 24);
+  showRangeInput();
+  renderCompare();
+}
+segment("cmp-range", (v) => { state.range = +v; showRangeInput(); renderCompare(); });
+$("range-n").addEventListener("change", applyRangeInput);
+$("range-n").addEventListener("keydown", (e) => { if (e.key === "Enter") applyRangeInput(); });
+$("range-u").addEventListener("change", applyRangeInput);
 segment("cmp-axis", (v) => { state.cmpAxis = v; renderCompare(); });
 // 평소 범위 켜기/끄기: 비교 차트의 회색 띠와 표의 '평소 대비' 칸을 함께 켜고 끈다. 선택은 브라우저에 기억한다.
 function applyBaseToggle() {
