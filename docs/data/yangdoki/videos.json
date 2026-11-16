@@ -1,5 +1,26 @@
 [
  {
+  "id": "nQOHupZ4GCI",
+  "first_seen_at": "2026-11-16T08:00:39Z",
+  "title": "무협잘알(?)이 되어보겠습니다❗",
+  "published_at": "2026-11-16T08:00:33Z",
+  "thumbnail": "https://i.ytimg.com/vi/nQOHupZ4GCI/mqdefault.jpg",
+  "duration_s": 669,
+  "is_short": false,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-11-16T08:00:39Z",
+  "latest": {
+   "views": 6,
+   "likes": 0,
+   "comments": 0
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "sOFpUgWHkeQ",
   "first_seen_at": "2026-11-16T06:00:35Z",
   "title": "실루엣 마지막 공개! (●ˇ∀ˇ●) SOOP 재데뷔 방송에서 보아요♥️",
@@ -9,16 +30,16 @@
   "is_short": true,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-16T07:01:19Z",
+  "last_collected_at": "2026-11-16T08:00:39Z",
   "latest": {
-   "views": 2255,
-   "likes": 257,
-   "comments": 19
+   "views": 3230,
+   "likes": 357,
+   "comments": 32
   },
   "views_24h_after": null,
   "views_7d_after": null,
   "gain_24h": null,
-  "snapshots": 2
+  "snapshots": 3
  },
  {
   "id": "OOam8dp9OhI",
@@ -30,16 +51,16 @@
   "is_short": true,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-16T07:01:19Z",
+  "last_collected_at": "2026-11-16T08:00:39Z",
   "latest": {
-   "views": 11874,
-   "likes": 829,
+   "views": 11961,
+   "likes": 831,
    "comments": 45
   },
   "views_24h_after": 10318,
   "views_7d_after": null,
-  "gain_24h": 2291,
-  "snapshots": 46
+  "gain_24h": 2107,
+  "snapshots": 47
  },
  {
   "id": "13Wrr6AYrKw",
@@ -51,16 +72,16 @@
   "is_short": true,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-16T07:01:19Z",
+  "last_collected_at": "2026-11-16T08:00:39Z",
   "latest": {
-   "views": 7909,
-   "likes": 812,
+   "views": 7981,
+   "likes": 817,
    "comments": 26
   },
   "views_24h_after": 6627,
   "views_7d_after": null,
-  "gain_24h": 1478,
-  "snapshots": 47
+  "gain_24h": 1410,
+  "snapshots": 48
  },
  {
   "id": "9K7OAP9_y3g",
@@ -72,16 +93,16 @@
   "is_short": true,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-16T07:01:19Z",
+  "last_collected_at": "2026-11-16T08:00:39Z",
   "latest": {
-   "views": 13422,
-   "likes": 2248,
+   "views": 13507,
+   "likes": 2250,
    "comments": 50
   },
   "views_24h_after": 11811,
   "views_7d_after": null,
-  "gain_24h": 1383,
-  "snapshots": 50
+  "gain_24h": 1358,
+  "snapshots": 51
  },
  {
   "id": "KmKFRAKBFME",
@@ -93,16 +114,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-16T07:01:19Z",
+  "last_collected_at": "2026-11-16T08:00:39Z",
   "latest": {
-   "views": 18694,
+   "views": 18779,
    "likes": 208,
    "comments": 35
   },
   "views_24h_after": 8572,
   "views_7d_after": null,
-  "gain_24h": 1623,
-  "snapshots": 96
+  "gain_24h": 1564,
+  "snapshots": 97
  },
  {
   "id": "2Z1-AoZm1Es",
