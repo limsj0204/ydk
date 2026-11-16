@@ -429,7 +429,9 @@ const state = {
   channel: null, videos: [], byId: new Map(),
   type: "all", q: "", sort: "published_at", desc: true,
   cmp: new Map(),          // videoId -> 색상 슬롯(1~8). 선택이 바뀌어도 기존 영상 색은 유지한다.
-  range: 168, selected: null, axis: "time",
+  // 비교 구간(시간). 직접 고른 값은 브라우저에 기억해 새로고침해도 유지한다.
+  range: (() => { try { const r = +localStorage.getItem("range"); return r >= 1 && r <= 8760 ? r : 168; } catch (e) { return 168; } })(),
+  selected: null, axis: "time",
   baseline: null,          // 채널별 평소 추이 (baseline.json)
   showBase: (() => { try { return localStorage.getItem("baseline") !== "off"; } catch (e) { return true; } })(),
   cmpAxis: "age",          // 비교 차트 가로축: age = 업로드 후 경과, clock = 업로드한 날 0시 기준
@@ -985,6 +987,7 @@ segment("type-filter", (v) => { state.type = v; state.limit = PAGE; defaultCmp()
 // 비교 구간: 버튼(48시간·7일·30일) 또는 직접 입력. 입력칸은 항상 현재 구간을 보여준다.
 function showRangeInput() {
   const h = state.range, byDay = h % 24 === 0;
+  try { localStorage.setItem("range", String(h)); } catch (e) {}
   $("range-n").value = byDay ? h / 24 : h;
   $("range-u").value = byDay ? "24" : "1";
   const preset = [...$("cmp-range").querySelectorAll("button")].some((b) => +b.dataset.v === h);
@@ -1002,6 +1005,7 @@ segment("cmp-range", (v) => { state.range = +v; showRangeInput(); renderCompare(
 $("range-n").addEventListener("change", applyRangeInput);
 $("range-n").addEventListener("keydown", (e) => { if (e.key === "Enter") applyRangeInput(); });
 $("range-u").addEventListener("change", applyRangeInput);
+showRangeInput();  // 기억해 둔 구간을 버튼·입력칸에 반영
 segment("cmp-axis", (v) => { state.cmpAxis = v; renderCompare(); });
 // 평소 범위 켜기/끄기: 비교 차트의 회색 띠와 표의 '평소 대비' 칸을 함께 켜고 끈다. 선택은 브라우저에 기억한다.
 function applyBaseToggle() {
