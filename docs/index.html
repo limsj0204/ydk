@@ -902,9 +902,18 @@ async function renderDetail() {
   // 구간 평균 증가 속도: 직전 수집 시각부터 이번 수집 시각까지 평균. 계단형으로 그린다.
   // 점을 각 구간의 시작에 두고 다음 점까지 그 값을 수평으로 유지(Chart.js stepped: "before")해서,
   // 각 구간의 값이 정확히 그 구간(직전 수집 ~ 이번 수집) 위에 그려지도록 한다.
+  // 구간이 45분보다 짧으면(업로드 직후 첫 수집, 재시도·수동 수집 등) 조회수 반영 지연 때문에 값이 크게 튀므로
+  // 다음 수집과 합쳐 한 구간으로 계산한다. 마지막 점이 짧은 구간이면 직전 점 대신 마지막 점을 쓴다.
+  const MIN_GAP = 45 * 60e3;
+  const ratePtsM = [];
+  for (const p of ratePts) {
+    const last = ratePtsM[ratePtsM.length - 1];
+    if (!last || p.t - last.t >= MIN_GAP) ratePtsM.push(p);
+    else if (p === ratePts[ratePts.length - 1] && ratePtsM.length > 1) ratePtsM[ratePtsM.length - 1] = p;
+  }
   const rates = [];
-  for (let i = 1; i < ratePts.length; i++) {
-    const a = ratePts[i - 1], b = ratePts[i];
+  for (let i = 1; i < ratePtsM.length; i++) {
+    const a = ratePtsM[i - 1], b = ratePtsM[i];
     const dh = (b.t - a.t) / 3600e3;
     if (dh > 0) rates.push({ p: b, prev: a, y: Math.max(0, (b.views - a.views) / dh) });
   }
