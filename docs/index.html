@@ -786,7 +786,10 @@ async function renderCompare() {
   const xs = grid(xMax, clock ? 192 : 168);
   const datasets = await Promise.all(entries.map(async ({ v, slot }) => {
     const shift = clock ? uploadClockHours(v) : 0;
-    const pts = (await loadSeries(v.id)).map((p) => ({ x: ageHours(v, p.t) + shift, y: p.views }));
+    const raw = await loadSeries(v.id);
+    const pts = raw.map((p) => ({ x: ageHours(v, p.t) + shift, y: p.views }));
+    // 업로드 직후(6시간 안)부터 추적한 영상은 업로드 순간을 조회수 0으로 보고 선을 0에서 시작한다.
+    if (raw.length && ageHours(v, raw[0].t) > 0 && ageHours(v, raw[0].t) <= 6) pts.unshift({ x: shift, y: 0 });
     const color = slotColor(slot);
     return {
       label: v.title, data: xs.map((x) => ({ x, y: interp(pts, x) })), baseColor: color,
@@ -895,19 +898,23 @@ async function renderDetail() {
   const pub = Date.parse(v.published_at);
   const fromUpload = pts.length && pts[0].t > pub && pts[0].t - pub <= 6 * 3600e3;
   const ratePts = fromUpload ? [{ t: pub, views: 0, upload: true }, ...pts] : pts;
+  const viewPts = ratePts;  // 누적 조회수 선도 업로드 순간(0)에서 시작
   const xMin = ratePts.length ? xOf(ratePts[0]) : undefined, xMax = pts.length ? xOf(pts[pts.length - 1]) : undefined;
 
   // 누적 조회수는 변화 폭이 좁아 '5.3만'처럼 축약하면 눈금이 겹치므로 전체 숫자로 표시한다.
   const vOpts = baseOptions({ xTick, yTick: (v) => fmtInt.format(v) });
   vOpts.plugins.tooltip.callbacks = {
-    title: (items) => fmtDateTime.format(pts[items[0].dataIndex].t) + ` · 업로드 후 ${fmtAge(ageHours(v, pts[items[0].dataIndex].t))}`,
+    title: (items) => {
+      const p = viewPts[items[0].dataIndex];
+      return p.upload ? `업로드 ${fmtDateTime.format(p.t)}` : fmtDateTime.format(p.t) + ` · 업로드 후 ${fmtAge(ageHours(v, p.t))}`;
+    },
     label: (item) => ` 조회수 ${fmtInt.format(item.parsed.y)}`,
   };
   vOpts.scales.y.beginAtZero = false;
   const fixTicks = (scale) => { scale.ticks = hourTicks(scale.min, scale.max, byAge); };
   Object.assign(vOpts.scales.x, { min: xMin, max: xMax, afterBuildTicks: fixTicks });
   draw("d-views", { type: "line", options: vOpts, data: { datasets: [{
-    label: "조회수", data: pts.map((p) => ({ x: xOf(p), y: p.views })),
+    label: "조회수", data: viewPts.map((p) => ({ x: xOf(p), y: p.views })),
     borderColor: color, borderWidth: 2, cubicInterpolationMode: "monotone", fill: "start",
     backgroundColor: (c) => {  // 선 아래를 위에서 아래로 옅어지는 색으로 채운다
       const { ctx, chartArea } = c.chart;
@@ -916,7 +923,7 @@ async function renderDetail() {
       g.addColorStop(0, color + "33"); g.addColorStop(1, color + "00");
       return g;
     },
-    pointRadius: pts.length > 60 ? 0 : 3, pointHoverRadius: 4, pointBackgroundColor: color, pointBorderColor: css("--surface"), pointBorderWidth: 1,
+    pointRadius: pts.length > 60 ? 0 : viewPts.map((p) => (p.upload ? 0 : 3)), pointHoverRadius: 4, pointBackgroundColor: color, pointBorderColor: css("--surface"), pointBorderWidth: 1,
   }] } });
 
   // 구간 평균 증가 속도: 직전 수집 시각부터 이번 수집 시각까지 평균. 계단형으로 그린다.
