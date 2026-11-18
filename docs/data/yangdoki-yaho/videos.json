@@ -1,5 +1,26 @@
 [
  {
+  "id": "ecbFrFfpC64",
+  "first_seen_at": "2026-11-18T07:00:34Z",
+  "title": "한결의 추잡한 시선",
+  "published_at": "2026-11-18T06:22:57Z",
+  "thumbnail": "https://i.ytimg.com/vi/ecbFrFfpC64/mqdefault.jpg",
+  "duration_s": 101,
+  "is_short": false,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-11-18T07:00:34Z",
+  "latest": {
+   "views": 199,
+   "likes": 16,
+   "comments": 2
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "4kvxjtASKOs",
   "first_seen_at": "2026-11-15T10:00:32Z",
   "title": "아무튼 맞는 거는 다 잘하는 최고의 탱커 미르",
@@ -9,7 +30,7 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-18T06:00:36Z",
+  "last_collected_at": "2026-11-18T07:00:34Z",
   "latest": {
    "views": 8110,
    "likes": 65,
@@ -18,7 +39,7 @@
   "views_24h_after": 6693,
   "views_7d_after": null,
   "gain_24h": 683,
-  "snapshots": 69
+  "snapshots": 70
  },
  {
   "id": "E8KnkbtYiyE",
@@ -30,7 +51,7 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-18T06:00:36Z",
+  "last_collected_at": "2026-11-18T07:00:34Z",
   "latest": {
    "views": 7030,
    "likes": 69,
@@ -39,7 +60,7 @@
   "views_24h_after": 5369,
   "views_7d_after": null,
   "gain_24h": 856,
-  "snapshots": 73
+  "snapshots": 74
  },
  {
   "id": "0dl1N5EqNzQ",
@@ -51,7 +72,7 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-18T06:00:36Z",
+  "last_collected_at": "2026-11-18T07:00:34Z",
   "latest": {
    "views": 8567,
    "likes": 115,
@@ -59,8 +80,8 @@
   },
   "views_24h_after": 5132,
   "views_7d_after": null,
-  "gain_24h": 408,
-  "snapshots": 95
+  "gain_24h": 380,
+  "snapshots": 96
  },
  {
   "id": "sAvD25gprGI",
@@ -72,7 +93,7 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-18T06:00:36Z",
+  "last_collected_at": "2026-11-18T07:00:34Z",
   "latest": {
    "views": 7300,
    "likes": 68,
@@ -80,8 +101,8 @@
   },
   "views_24h_after": 5850,
   "views_7d_after": null,
-  "gain_24h": 32,
-  "snapshots": 97
+  "gain_24h": 16,
+  "snapshots": 98
  },
  {
   "id": "UnhJXWOHNlI",
@@ -93,7 +114,7 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-18T06:00:36Z",
+  "last_collected_at": "2026-11-18T07:00:34Z",
   "latest": {
    "views": 937,
    "likes": 10,
@@ -102,7 +123,7 @@
   "views_24h_after": 661,
   "views_7d_after": null,
   "gain_24h": 7,
-  "snapshots": 162
+  "snapshots": 163
  },
  {
   "id": "Q29GMeS1k6M",
@@ -114,7 +135,7 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-18T06:00:36Z",
+  "last_collected_at": "2026-11-18T07:00:34Z",
   "latest": {
    "views": 6955,
    "likes": 79,
@@ -123,7 +144,7 @@
   "views_24h_after": 5480,
   "views_7d_after": null,
   "gain_24h": 66,
-  "snapshots": 167
+  "snapshots": 168
  },
  {
   "id": "9Db6Q3xIf9Q",
