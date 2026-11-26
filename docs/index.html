@@ -98,7 +98,12 @@ button, input { font: inherit; letter-spacing: inherit; }
 /* ---- 머리글 */
 header { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 22px; }
 header > div:not(.seg) { flex: 1 1 220px; min-width: 0; }
-header .theme { margin-left: auto; flex: none; }
+header .theme { flex: none; }
+.icon-btn { margin-left: auto; flex: none; width: 34px; height: 34px; border: 0; border-radius: 10px; cursor: pointer;
+  background: var(--seg-track); color: var(--ink-2); font-size: 18px; line-height: 1; }
+.icon-btn:hover { color: var(--ink); }
+.icon-btn.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 header .seg button { padding: 4px 10px; font-size: 12.5px; }
 header img { width: 52px; height: 52px; border-radius: 50%; background: var(--grid);
   box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--border); }
@@ -250,6 +255,7 @@ footer a { color: inherit; }
       <h1 id="ch-title">조회수 추이</h1>
       <div class="sub" id="ch-sub">불러오는 중…</div>
     </div>
+    <button class="icon-btn" id="refresh" title="최신 데이터 불러오기" aria-label="최신 데이터 불러오기">↻</button>
     <div class="seg theme" id="theme" role="group" aria-label="화면 테마">
       <button data-v="auto" aria-pressed="true" title="기기 설정 따르기">자동</button>
       <button data-v="light" aria-pressed="false">라이트</button>
@@ -1091,7 +1097,41 @@ async function loadChannel(key) {
   $("empty").hidden = !!has;
   if (!has) { $("ch-sub").textContent = ""; return; }
   renderHeader(); renderTiles(); defaultCmp(); renderTable(); renderCompare();
+  state.fetchedAt = Date.now();
 }
+// 선택(비교 영상, 상세, 필터, 구간)은 그대로 두고 지금 채널의 데이터만 새로 받는다.
+// 설치한 앱은 다시 열어도 페이지를 새로 불러오지 않으므로, 화면이 다시 보일 때와 10분마다 자동으로 호출한다.
+async function refreshData() {
+  if (!state.channel || state.refreshing) return;
+  const key = state.key;
+  state.refreshing = true;
+  $("refresh").classList.add("spin");
+  try {
+    const [ch, vids, chans, bl] = await Promise.all([
+      loadJSON(state.base + "channel.json"), loadJSON(state.base + "videos.json"),
+      loadJSON("data/channels.json").catch(() => state.channels), loadJSON(state.base + "baseline.json").catch(() => state.baseline),
+    ]);
+    if (state.key !== key) return;
+    state.fetchedAt = Date.now();
+    if (ch.last_run_at === state.channel.last_run_at) { renderStatus(); return; }  // 새 수집 없음
+    Object.assign(state, { channel: ch, videos: vids, channels: chans, baseline: bl });
+    state.byId = new Map(vids.map((v) => [v.id, v]));
+    for (const id of [...state.cmp.keys()]) if (!state.byId.has(id)) state.cmp.delete(id);
+    series.clear();
+    renderChannelTabs(); renderHeader(); renderTiles(); renderTable(); renderCompare(); renderDetail();
+  } catch (e) {
+    /* 네트워크 오류: 다음 기회에 다시 */
+  } finally {
+    state.refreshing = false;
+    $("refresh").classList.remove("spin");
+  }
+}
+$("refresh").addEventListener("click", refreshData);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && Date.now() - (state.fetchedAt || 0) > 60e3) refreshData();
+});
+window.addEventListener("pageshow", (e) => { if (e.persisted) refreshData(); });
+setInterval(() => { if (document.visibilityState === "visible") refreshData(); }, 10 * 60e3);
 function switchChannel(key) {
   if (key === state.key) return;
   history.replaceState(null, "", "#" + encodeURIComponent(key));
