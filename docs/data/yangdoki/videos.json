@@ -1,5 +1,26 @@
 [
  {
+  "id": "4qQVD32oBiE",
+  "first_seen_at": "2026-11-27T09:00:48Z",
+  "title": "데뷔하고 억눌려있던 욕망을 풀어버린 신입 버튜버ㄷㄷ",
+  "published_at": "2026-11-27T09:00:27Z",
+  "thumbnail": "https://i.ytimg.com/vi/4qQVD32oBiE/mqdefault.jpg",
+  "duration_s": 612,
+  "is_short": false,
+  "is_live": false,
+  "status": "active",
+  "last_collected_at": "2026-11-27T09:00:48Z",
+  "latest": {
+   "views": 0,
+   "likes": 0,
+   "comments": 0
+  },
+  "views_24h_after": null,
+  "views_7d_after": null,
+  "gain_24h": null,
+  "snapshots": 1
+ },
+ {
   "id": "e_cZLwupXZg",
   "first_seen_at": "2026-11-26T11:00:41Z",
   "title": "마크로스 프론티어 OST 성간비행 │Cover by. YangDoki",
@@ -9,16 +30,16 @@
   "is_short": false,
   "is_live": false,
   "status": "active",
-  "last_collected_at": "2026-11-27T08:00:37Z",
+  "last_collected_at": "2026-11-27T09:00:48Z",
   "latest": {
-   "views": 25788,
-   "likes": 1245,
-   "comments": 165
+   "views": 27188,
+   "likes": 1285,
+   "comments": 168
   },
   "views_24h_after": null,
   "views_7d_after": null,
   "gain_24h": null,
-  "snapshots": 22
+  "snapshots": 23
  },
  {
   "id": "nQOHupZ4GCI",
